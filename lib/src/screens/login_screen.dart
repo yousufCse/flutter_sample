@@ -13,7 +13,7 @@ class LoginScreen extends StatelessWidget {
           emailField(bloc),
           passwordField(bloc),
           SizedBox(height: 20.0),
-          submitButton(context),
+          submitButton(bloc),
         ],
       ),
     );
@@ -40,7 +40,6 @@ class LoginScreen extends StatelessWidget {
     return StreamBuilder(
       stream: bloc.password,
       builder: (context, snapshot) {
-        print('render password strem build as per onChange');
         return TextField(
           onChanged: bloc.changePassword,
           decoration: InputDecoration(
@@ -52,18 +51,15 @@ class LoginScreen extends StatelessWidget {
     );
   }
 
-  Widget submitButton(context) {
-    return RaisedButton(
-      child: Text('Login'),
-      color: Colors.blue,
-      onPressed: () {
-        // Navigate to second screen
-        // Navigator.push(
-        //   context,
-        //   MaterialPageRoute(
-        //     builder: (context) => ForgotPasswordScreen(),
-        //   ),
-        // );
+  Widget submitButton(bloc) {
+    return StreamBuilder(
+      stream: bloc.submitValid,
+      builder: (context, snapshot) {
+        return RaisedButton(
+          child: Text('Login'),
+          color: Colors.blue,
+          onPressed: snapshot.hasData ? bloc.submit : null
+        );
       },
     );
   }
