@@ -12,6 +12,7 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
     Container(color: Colors.redAccent),
     Container(color: Colors.greenAccent),
     Container(color: Colors.blueAccent),
+    Container(color: Colors.purpleAccent)
   ];
 
   void getChangedPageAndMoveBar(int page) {
@@ -27,7 +28,13 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
           children: <Widget>[
             _buildPageView(),
             _buildIndicators(),
-            _buildGetStarted(),
+            Align(
+              alignment: Alignment.bottomRight,
+              child: Padding(
+                padding: EdgeInsets.only(right: 20.0, bottom: 20.0),
+                child: _buildGetStarted(),
+              ),
+            ),
           ],
         ),
       ),
@@ -70,7 +77,7 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
         child: Icon(Icons.arrow_forward),
         onPressed: () {},
         shape: BeveledRectangleBorder(
-          borderRadius: BorderRadius.all(Radius.circular(26)),
+          borderRadius: BorderRadius.all(Radius.circular(25)),
         ),
       ),
     );
@@ -78,7 +85,7 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
 
   Widget circleBar(bool isActive) {
     return AnimatedContainer(
-      duration: Duration(microseconds: 150),
+      duration: Duration(milliseconds: 200),
       margin: EdgeInsets.symmetric(horizontal: 8.0),
       height: isActive ? 20 : 15,
       width: isActive ? 20 : 15,
