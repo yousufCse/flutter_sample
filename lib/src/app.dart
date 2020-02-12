@@ -1,8 +1,7 @@
 import 'package:flutter/material.dart';
-import 'package:flutter_sample/src/screens/category_meals_screen.dart';
-import './screens/categories_screen.dart';
 import './screens/category_meals_screen.dart';
 import './screens/meal_detail_screen.dart';
+import './screens/tab_screen.dart';
 
 class App extends StatefulWidget {
   @override
@@ -28,9 +27,9 @@ class _AppState extends State<App> {
                   fontSize: 20,
                   fontFamily: 'RobotoCondensed',
                   fontWeight: FontWeight.bold))),
-      initialRoute: CategoriesScreen.routeName,
+      initialRoute: TabsScreen.routeName,
       routes: {
-        CategoriesScreen.routeName: (context) => CategoriesScreen(),
+        TabsScreen.routeName: (context) => TabsScreen(),
         CategoryMealsScreen.routeName: (context) => CategoryMealsScreen(),
         MealDetailScreen.routeName: (context) => MealDetailScreen(),
       },
