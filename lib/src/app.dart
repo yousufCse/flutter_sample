@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import './screens/category_meals_screen.dart';
 import './screens/meal_detail_screen.dart';
 import './screens/tab_screen.dart';
+import './screens/filter_screen.dart';
 
 class App extends StatefulWidget {
   @override
@@ -32,6 +33,7 @@ class _AppState extends State<App> {
         TabsScreen.routeName: (context) => TabsScreen(),
         CategoryMealsScreen.routeName: (context) => CategoryMealsScreen(),
         MealDetailScreen.routeName: (context) => MealDetailScreen(),
+        FilterScreen.routeName: (context) => FilterScreen(),
       },
     );
   }

@@ -1,4 +1,6 @@
 import 'package:flutter/material.dart';
+import '../screens/tab_screen.dart';
+import '../screens/filter_screen.dart';
 
 class MainDrawer extends StatelessWidget {
   @override
@@ -21,28 +23,44 @@ class MainDrawer extends StatelessWidget {
             ),
           ),
           SizedBox(height: 20),
-          buildListTile(Icons.restaurant, 'Meals'),
-          buildListTile(Icons.settings, 'Filters')
+          buildListTile(
+            'Meals',
+            Icons.restaurant,
+            () {
+              Navigator.of(context).pushNamed(TabsScreen.routeName);
+            },
+          ),
+          buildListTile(
+            'Filters',
+            Icons.settings,
+            () {
+              Navigator.of(context).pushNamed(FilterScreen.routeName);
+            },
+          ),
         ],
       ),
     );
   }
-  
-  ListTile buildListTile(IconData iconData, String title) {
+
+  ListTile buildListTile(
+    String title,
+    IconData iconData,
+    Function tapHandler,
+  ) {
     return ListTile(
-          onTap: null,
-          leading: Icon(
-            iconData,
-            size: 26,
-          ),
-          title: Text(
-            title,
-            style: TextStyle(
-              fontFamily: 'RobotoCondensed',
-              fontSize: 24,
-              fontWeight: FontWeight.bold,
-            ),
-          ),
-        );
+      onTap: tapHandler,
+      leading: Icon(
+        iconData,
+        size: 26,
+      ),
+      title: Text(
+        title,
+        style: TextStyle(
+          fontFamily: 'RobotoCondensed',
+          fontSize: 24,
+          fontWeight: FontWeight.bold,
+        ),
+      ),
+    );
   }
 }
