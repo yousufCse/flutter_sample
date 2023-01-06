@@ -15,19 +15,22 @@ class _AppState extends State<App> {
     return MaterialApp(
       title: 'Meal App',
       theme: ThemeData(
-          primarySwatch: Colors.pink,
-          accentColor: Colors.amber,
-          canvasColor: Color.fromRGBO(255, 254, 299, 1),
-          fontFamily: 'Raleway',
-          textTheme: ThemeData.light().textTheme.copyWith(
-              body1: TextStyle(color: Color.fromRGBO(29, 51, 51, 1)),
-              body2: TextStyle(
+        primarySwatch: Colors.pink,
+        accentColor: Colors.amber,
+        canvasColor: Color.fromRGBO(255, 254, 299, 1),
+        fontFamily: 'Raleway',
+        textTheme: ThemeData.light().textTheme.copyWith(
+              bodySmall: TextStyle(color: Color.fromRGBO(29, 51, 51, 1)),
+              bodyMedium: TextStyle(
                 color: Color.fromRGBO(20, 51, 51, 1),
               ),
-              title: TextStyle(
-                  fontSize: 20,
-                  fontFamily: 'RobotoCondensed',
-                  fontWeight: FontWeight.bold))),
+              titleSmall: TextStyle(
+                fontSize: 20,
+                fontFamily: 'RobotoCondensed',
+                fontWeight: FontWeight.bold,
+              ),
+            ),
+      ),
       initialRoute: TabsScreen.routeName,
       routes: {
         TabsScreen.routeName: (context) => TabsScreen(),

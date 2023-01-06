@@ -22,7 +22,7 @@ class CategoryItem extends StatelessWidget {
       borderRadius: BorderRadius.circular(15),
       child: Container(
         padding: const EdgeInsets.all(15),
-        child: Text(title, style: Theme.of(context).textTheme.title),
+        child: Text(title, style: Theme.of(context).textTheme.titleSmall),
         decoration: BoxDecoration(
           borderRadius: BorderRadius.circular(15),
           gradient: LinearGradient(
