@@ -48,7 +48,7 @@ class MainDrawer extends StatelessWidget {
     Function tapHandler,
   ) {
     return ListTile(
-      onTap: tapHandler,
+      onTap: tapHandler as void Function()?,
       leading: Icon(
         iconData,
         size: 26,
