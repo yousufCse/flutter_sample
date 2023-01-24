@@ -10,6 +10,9 @@
      to
     subclass or reimplement
          FlutterApplication and put your custom class here. -->
+
+     <uses-permission android:name="android.permission.ACCESS_FINE_LOCATION" />
+     
      <application
           android:name="${applicationName}"
           android:label="flutter_sample"
