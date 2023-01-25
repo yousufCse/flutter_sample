@@ -6,6 +6,8 @@ class PlaceModel {
 
   factory PlaceModel.fromJson(Map<String, dynamic> json) {
     return PlaceModel(
-        description: json['description'], placeId: json['place_id']);
+      description: json['description'],
+      placeId: json['place_id'],
+    );
   }
 }

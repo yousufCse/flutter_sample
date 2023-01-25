@@ -6,6 +6,6 @@ class Geometry {
   const Geometry({required this.location});
 
   factory Geometry.fromJson(Map<String, dynamic> json) {
-    return Geometry.fromJson(json['location']);
+    return Geometry(location: Location.fromJson(json['location']));
   }
 }

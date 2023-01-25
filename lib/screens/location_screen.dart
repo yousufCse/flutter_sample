@@ -30,7 +30,7 @@ class _LocationScreenState extends State<LocationScreen> {
   final markers = <Marker>{};
 
   bool isLoading = false;
-  List<PlaceModel> list = [];
+  List<PlaceModel> predictions = [];
 
   @override
   void initState() {
@@ -82,19 +82,25 @@ class _LocationScreenState extends State<LocationScreen> {
             child: isLoading
                 ? const Center(child: CircularProgressIndicator())
                 : ListView.builder(
-                    itemCount: 10,
-                    itemBuilder: (context, index) => InkWell(
-                      onTap: () => onItemTap('Put place Id here'),
-                      child: Text('Item ${index + 1}'),
-                    ),
-                  ),
+                    itemCount: predictions.length,
+                    itemBuilder: (context, index) {
+                      final item = predictions[index];
+                      return InkWell(
+                        onTap: () => onItemTap(item.placeId),
+                        child: Container(
+                            margin: const EdgeInsets.only(
+                                left: 12, right: 12, bottom: 12),
+                            child: Text(
+                              item.description,
+                              style: const TextStyle(fontSize: 18),
+                            )),
+                      );
+                    }),
           ),
           Expanded(
             child: GoogleMap(
-              initialCameraPosition: CameraPosition(
-                  zoom: 14, target: fixedLocation
-                  // LatLng(currentPositon.latitude, currentPositon.latitude),
-                  ),
+              initialCameraPosition:
+                  CameraPosition(zoom: 14, target: fixedLocation),
               markers: markers,
               myLocationEnabled: true,
               onMapCreated: onMapCreated,
@@ -135,7 +141,7 @@ class _LocationScreenState extends State<LocationScreen> {
     );
   }
 
-  getLocationByPlaceId(String placeId) async {
+  void getLocationByPlaceId(String placeId) async {
     final selectedPlace = await placesService.getPlace(placeId);
 
     await _gotoPlace(selectedPlace);
@@ -146,7 +152,7 @@ class _LocationScreenState extends State<LocationScreen> {
       isLoading = true;
     });
 
-    list = await PlacesService(client: client).getAutoComplete(text);
+    predictions = await PlacesService(client: client).getAutoComplete(text);
     setState(() {
       isLoading = false;
     });
@@ -156,7 +162,7 @@ class _LocationScreenState extends State<LocationScreen> {
 
   moveCameraPosition(LatLng latLng) {
     mapController.animateCamera(
-      CameraUpdate.newCameraPosition(CameraPosition(target: latLng, zoom: 14)),
+      CameraUpdate.newCameraPosition(CameraPosition(target: latLng, zoom: 12)),
     );
   }
 
