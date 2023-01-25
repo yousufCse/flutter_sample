@@ -35,7 +35,7 @@ class _LocationScreenState extends State<LocationScreen> {
   @override
   void initState() {
     placesService = PlacesService(client: client);
-    setCurrentLocation();
+    // setCurrentLocation();
 
     super.initState();
   }
@@ -107,8 +107,12 @@ class _LocationScreenState extends State<LocationScreen> {
 
   void onMapCreated(controller) {
     mapController = controller;
-    addMarker('2', const LatLng(23.7558982, 90.3629074));
-    addMarker('3', const LatLng(23.7505693, 90.3730078));
+
+    for (int i = 0; i < listOfLatLng.length; i++) {
+      addMarker('ID_${i + 1}', listOfLatLng[i]);
+    }
+
+    setState(() {});
   }
 
   setCurrentLocation() async {
@@ -147,12 +151,12 @@ class _LocationScreenState extends State<LocationScreen> {
       isLoading = false;
     });
 
-    moveCameraPosition(const LatLng(23.6251919, 90.5118054));
+    moveCameraPosition(const LatLng(24.5800093, 88.2640644));
   }
 
   moveCameraPosition(LatLng latLng) {
     mapController.animateCamera(
-      CameraUpdate.newCameraPosition(CameraPosition(target: latLng, zoom: 16)),
+      CameraUpdate.newCameraPosition(CameraPosition(target: latLng, zoom: 14)),
     );
   }
 
@@ -165,8 +169,22 @@ class _LocationScreenState extends State<LocationScreen> {
       infoWindow: const InfoWindow(title: 'Title', snippet: 'Address'),
     );
 
+    // markers.add(marker);
+
     setState(() {
       markers.add(marker);
     });
   }
 }
+
+const List<LatLng> listOfLatLng = [
+  LatLng(23.7558982, 90.3629074),
+  LatLng(23.7505693, 90.3730078),
+  LatLng(24.3824967, 88.6037882),
+  LatLng(22.8170646, 89.556799),
+  LatLng(21.4509227, 91.9668569),
+  LatLng(23.7752681, 90.400771),
+  LatLng(24.5800093, 88.2640644), // nawabganj
+  LatLng(24.5879036, 88.275329), // nawabganj
+  LatLng(24.5836439, 88.2659779), // nawabganj
+];

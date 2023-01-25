@@ -4,6 +4,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_sample/core/constants.dart';
 import 'package:flutter_sample/screens/place.dart';
 import 'package:flutter_sample/screens/place_model.dart';
+import 'package:google_maps_flutter/google_maps_flutter.dart';
 import 'package:http/http.dart';
 
 class PlacesService {
