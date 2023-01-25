@@ -3,6 +3,7 @@ import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_sample/core/constants.dart';
+import 'package:flutter_sample/core/debouncer.dart';
 import 'package:flutter_sample/core/service/geo_locator_service.dart';
 import 'package:flutter_sample/features/agent_place/data/model/place/place_details.dart';
 import 'package:flutter_sample/features/agent_place/data/model/prediction.dart';
@@ -32,6 +33,8 @@ class _AgentPlaceScreenState extends State<AgentPlaceScreen> {
   late PlaceDetailsApiCubit placeDetailsApiCubit;
   late PredictionApiCubit predictionApiCubit;
 
+  Debouncer debouncer = Debouncer(milliseconds: 500);
+
   @override
   void initState() {
     // setCurrentLocation();
@@ -42,17 +45,26 @@ class _AgentPlaceScreenState extends State<AgentPlaceScreen> {
     super.initState();
   }
 
-  onSearchPress() {
-    final text = searchFieldController.text.trim();
-
-    if (text.isNotEmpty) {
-      predictionApiCubit.getPredictinList(text);
-      FocusManager.instance.primaryFocus?.unfocus();
-    }
+  void onPressClearBtn() {
+    predictionApiCubit.removePredictionList();
+    searchFieldController.text = '';
+    FocusManager.instance.primaryFocus?.unfocus();
   }
 
-  onItemTap(String placeId) {
-    placeDetailsApiCubit.getPlaceDetails(placeId);
+  void onChangeSearchField(String value) {
+    debugPrint('onChange called: $value');
+
+    debouncer.run(() {
+      predictionApiCubit.getPredictinList(value.trim());
+
+      debugPrint('Debouncer run called.');
+    });
+  }
+
+  onItemTap(Prediction item) {
+    FocusManager.instance.primaryFocus?.unfocus();
+    placeDetailsApiCubit.getPlaceDetails(item.placeId);
+    searchFieldController.text = item.description;
   }
 
   @override
@@ -104,12 +116,15 @@ class _AgentPlaceScreenState extends State<AgentPlaceScreen> {
               Expanded(
                 child: TextField(
                   controller: searchFieldController,
+                  onChanged: onChangeSearchField,
                   decoration: const InputDecoration(
                       hintText: Constants.searchHint, border: InputBorder.none),
                 ),
               ),
-              IconButton(
-                  onPressed: onSearchPress, icon: const Icon(Icons.search))
+              searchFieldController.text.trim().isEmpty
+                  ? IconButton(onPressed: () {}, icon: const Icon(Icons.search))
+                  : IconButton(
+                      onPressed: onPressClearBtn, icon: const Icon(Icons.clear))
             ],
           ),
         ),
@@ -129,7 +144,7 @@ class _AgentPlaceScreenState extends State<AgentPlaceScreen> {
                     itemBuilder: (context, index) {
                       final item = predictionList[index];
                       return InkWell(
-                        onTap: () => onItemTap(item.placeId),
+                        onTap: () => onItemTap(item),
                         child: Container(
                             color: Colors.grey[300],
                             margin: const EdgeInsets.only(bottom: 10),
@@ -172,7 +187,7 @@ class _AgentPlaceScreenState extends State<AgentPlaceScreen> {
             place.geometry.location.lat,
             place.geometry.location.lng,
           ),
-          zoom: 12,
+          zoom: 17,
         ),
       ),
     );

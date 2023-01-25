@@ -18,8 +18,12 @@ class AgentPlaceRemoteImpl implements AgentPlaceRemote {
 
   @override
   Future<List<Prediction>> fetchPredictionList(String place) async {
+    // &language=bn
+    // &types=(cities)
+    // dhaka lat lng 23.7807777,90.3492415
+
     var url =
-        '${Constants.baseUrl}/place/autocomplete/json?input=$place&types=(cities)&key=${Constants.mapApiKey}';
+        '${Constants.baseUrl}/place/autocomplete/json?input=$place&location=23.7807777,90.3492415&radius=500&key=${Constants.mapApiKey}';
 
     final response = await client.get(Uri.parse(url));
     var jsonString = json.decode(response.body);
