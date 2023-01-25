@@ -169,11 +169,11 @@ class _LocationScreenState extends State<LocationScreen> {
       infoWindow: const InfoWindow(title: 'Title', snippet: 'Address'),
     );
 
-    // markers.add(marker);
+    markers.add(marker);
 
-    setState(() {
-      markers.add(marker);
-    });
+    // setState(() {
+    //   markers.add(marker);
+    // });
   }
 }
 
