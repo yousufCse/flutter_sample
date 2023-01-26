@@ -6,15 +6,15 @@ import 'package:flutter_sample/features/agent_place/data/model/place/place_detai
 import 'package:flutter_sample/features/agent_place/data/model/prediction.dart';
 import 'package:http/http.dart';
 
-abstract class AgentPlaceRemote {
+abstract class LocationSearchRemote {
   Future<List<Prediction>> fetchPredictionList(String place);
   Future<PlaceDetails> fetchPlaceDetails(String placeId);
 }
 
-class AgentPlaceRemoteImpl implements AgentPlaceRemote {
+class LocationSearchRemoteImpl implements LocationSearchRemote {
   final Client client;
 
-  const AgentPlaceRemoteImpl({required this.client});
+  const LocationSearchRemoteImpl({required this.client});
 
   @override
   Future<List<Prediction>> fetchPredictionList(String place) async {

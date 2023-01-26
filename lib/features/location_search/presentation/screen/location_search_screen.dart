@@ -8,18 +8,18 @@ import 'package:flutter_sample/features/agent_place/data/model/place/place_detai
 import 'package:flutter_sample/features/agent_place/data/model/prediction.dart';
 import 'package:flutter_sample/features/agent_place/presentation/cubit/place_details_api_cubit.dart';
 import 'package:flutter_sample/features/agent_place/presentation/cubit/prediction_api_cubit.dart';
-import 'package:flutter_sample/features/agent_place/presentation/widgets/prediction_item.dart';
+import 'package:flutter_sample/features/search_location/presentation/widgets/prediction_item.dart';
 import 'package:geolocator/geolocator.dart';
 import 'package:google_maps_flutter/google_maps_flutter.dart';
 
-class AgentPlaceScreen extends StatefulWidget {
-  const AgentPlaceScreen({super.key});
+class LocationSearchScreen extends StatefulWidget {
+  const LocationSearchScreen({super.key});
 
   @override
-  State<AgentPlaceScreen> createState() => _AgentPlaceScreenState();
+  State<LocationSearchScreen> createState() => _LocationSearchScreenState();
 }
 
-class _AgentPlaceScreenState extends State<AgentPlaceScreen> {
+class _LocationSearchScreenState extends State<LocationSearchScreen> {
   final TextEditingController searchFieldController = TextEditingController();
 
   late GoogleMapController mapController;
