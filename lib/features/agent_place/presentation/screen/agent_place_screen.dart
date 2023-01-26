@@ -4,7 +4,6 @@ import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_sample/core/constants.dart';
 import 'package:flutter_sample/core/debouncer.dart';
-import 'package:flutter_sample/core/service/geo_locator_service.dart';
 import 'package:flutter_sample/features/agent_place/data/model/place/place_details.dart';
 import 'package:flutter_sample/features/agent_place/data/model/prediction.dart';
 import 'package:flutter_sample/features/agent_place/presentation/cubit/place_details_api_cubit.dart';
@@ -21,13 +20,10 @@ class AgentPlaceScreen extends StatefulWidget {
 }
 
 class _AgentPlaceScreenState extends State<AgentPlaceScreen> {
-  final LatLng fixedLocation = const LatLng(23.7676351, 90.3651452);
-
   final TextEditingController searchFieldController = TextEditingController();
 
   late GoogleMapController mapController;
-  late Position currentPositon;
-  // late PlacesService placesService;
+  LatLng? userCurrentLocation;
 
   final markers = <Marker>{};
 
@@ -38,11 +34,10 @@ class _AgentPlaceScreenState extends State<AgentPlaceScreen> {
 
   @override
   void initState() {
-    // setCurrentLocation();
-
     placeDetailsApiCubit = BlocProvider.of<PlaceDetailsApiCubit>(context);
     predictionApiCubit = BlocProvider.of<PredictionApiCubit>(context);
 
+    getCurrentLocation();
     super.initState();
   }
 
@@ -96,6 +91,7 @@ class _AgentPlaceScreenState extends State<AgentPlaceScreen> {
   }
 
   Widget _body() {
+    debugPrint('build body');
     List<Prediction> predictionList = [];
 
     final predictionState = context.watch<PredictionApiCubit>().state;
@@ -106,7 +102,7 @@ class _AgentPlaceScreenState extends State<AgentPlaceScreen> {
     return Column(
       children: [
         Container(
-          height: 40,
+          height: 45,
           margin:
               const EdgeInsets.only(left: 10, right: 10, bottom: 10, top: 10),
           padding: const EdgeInsets.only(left: 10, right: 0),
@@ -123,7 +119,7 @@ class _AgentPlaceScreenState extends State<AgentPlaceScreen> {
                 ),
               ),
               searchFieldController.text.trim().isEmpty
-                  ? IconButton(onPressed: () {}, icon: const Icon(Icons.search))
+                  ? const IconButton(onPressed: null, icon: Icon(Icons.search))
                   : IconButton(
                       onPressed: onPressClearBtn, icon: const Icon(Icons.clear))
             ],
@@ -132,13 +128,16 @@ class _AgentPlaceScreenState extends State<AgentPlaceScreen> {
         Expanded(
           child: Stack(
             children: [
-              GoogleMap(
-                initialCameraPosition:
-                    CameraPosition(zoom: 12, target: fixedLocation),
-                markers: markers,
-                myLocationEnabled: true,
-                onMapCreated: onMapCreated,
-              ),
+              if (userCurrentLocation == null)
+                const CircularProgressIndicator(),
+              if (userCurrentLocation != null)
+                GoogleMap(
+                  initialCameraPosition:
+                      CameraPosition(zoom: 14, target: userCurrentLocation!),
+                  markers: markers,
+                  myLocationEnabled: true,
+                  onMapCreated: onMapCreated,
+                ),
               if (predictionList.isNotEmpty)
                 ListView.builder(
                     itemCount: predictionList.length,
@@ -154,20 +153,37 @@ class _AgentPlaceScreenState extends State<AgentPlaceScreen> {
     );
   }
 
-  void onMapCreated(controller) {
+  void onMapCreated(controller) async {
     mapController = controller;
 
     for (int i = 0; i < listOfLatLng.length; i++) {
       addMarker('ID_${i + 1}', listOfLatLng[i]);
     }
+    debugPrint('id: ${listOfLatLng.length}');
 
     setState(() {});
   }
 
-  setCurrentLocation() async {
-    currentPositon = await GeoLocatorService().getCurrentLocation();
+  getCurrentLocation() async {
+    LocationPermission permission;
+    permission = await Geolocator.requestPermission();
 
-    setState(() {});
+    debugPrint('Permisson: ${permission.name}');
+
+    if (permission == LocationPermission.always ||
+        permission == LocationPermission.whileInUse) {
+      Position position = await Geolocator.getCurrentPosition(
+          desiredAccuracy: LocationAccuracy.high);
+
+      double lat = position.latitude;
+      double lng = position.longitude;
+
+      userCurrentLocation = LatLng(lat, lng);
+      setState(() {});
+    } else {
+      userCurrentLocation = Constants.latLngDhaka;
+      setState(() {});
+    }
   }
 
   Future<void> gotoPlace(PlaceDetails place) async {
@@ -190,7 +206,7 @@ class _AgentPlaceScreenState extends State<AgentPlaceScreen> {
     );
   }
 
-  addMarker(String markerIdString, LatLng position) {
+  void addMarker(String markerIdString, LatLng position) {
     final markerId = MarkerId(markerIdString);
 
     final marker = Marker(
@@ -213,4 +229,625 @@ const List<LatLng> listOfLatLng = [
   LatLng(24.5800093, 88.2640644), // nawabganj
   LatLng(24.5879036, 88.275329), // nawabganj
   LatLng(24.5836439, 88.2659779), // nawabganj
+  LatLng(23.7566665, 90.3655222),
+  LatLng(23.7505693, 90.3730078),
+  LatLng(24.3824967, 88.6037882),
+  LatLng(22.8170646, 89.556799),
+  LatLng(21.4565146, 91.964564),
+  LatLng(23.7752681, 90.400771),
+  LatLng(24.5800093, 88.2640644), // nawabganj
+  LatLng(24.5879036, 88.275329), // nawabganj
+  LatLng(24.5836439, 88.2659779), // nawabganj
+  LatLng(23.7558982, 90.3629074),
+  LatLng(23.7505693, 90.3730078),
+  LatLng(24.3824967, 88.6037882),
+  LatLng(22.8170646, 89.556799),
+  LatLng(21.4509227, 91.9668569),
+  LatLng(23.7752681, 90.400771),
+  LatLng(24.5800093, 88.2640644), // nawabganj
+  LatLng(24.5879036, 88.275329), // nawabganj
+  LatLng(24.5836439, 88.2659779), // nawabganj
+  LatLng(23.7558982, 90.3629074),
+  LatLng(23.7505693, 90.3730078),
+  LatLng(24.3824967, 88.6037882),
+  LatLng(22.8170646, 89.556799),
+  LatLng(21.4509227, 91.9668569),
+  LatLng(23.7752681, 90.400771),
+  LatLng(24.5800093, 88.2640644), // nawabganj
+  LatLng(24.5879036, 88.275329), // nawabganj
+  LatLng(24.5836439, 88.2659779), // nawabganj
+  LatLng(23.7558982, 90.3629074),
+  LatLng(23.7505693, 90.3730078),
+  LatLng(24.3824967, 88.6037882),
+  LatLng(22.8170646, 89.556799),
+  LatLng(21.4509227, 91.9668569),
+  LatLng(23.7752681, 90.400771),
+  LatLng(24.5800093, 88.2640644), // nawabganj
+  LatLng(24.5879036, 88.275329), // nawabganj
+  LatLng(24.5836439, 88.2659779), // nawabganj
+  LatLng(23.7558982, 90.3629074),
+  LatLng(23.7505693, 90.3730078),
+  LatLng(24.3824967, 88.6037882),
+  LatLng(22.8170646, 89.556799),
+  LatLng(21.4509227, 91.9668569),
+  LatLng(23.7752681, 90.400771),
+  LatLng(24.5800093, 88.2640644), // nawabganj
+  LatLng(24.5879036, 88.275329), // nawabganj
+  LatLng(24.5836439, 88.2659779), // nawabganj
+  LatLng(23.7558982, 90.3629074),
+  LatLng(23.7505693, 90.3730078),
+  LatLng(24.3824967, 88.6037882),
+  LatLng(22.8170646, 89.556799),
+  LatLng(21.4509227, 91.9668569),
+  LatLng(23.7752681, 90.400771),
+  LatLng(24.5800093, 88.2640644), // nawabganj
+  LatLng(24.5879036, 88.275329), // nawabganj
+  LatLng(24.5836439, 88.2659779), // nawabganj
+  LatLng(23.7558982, 90.3629074),
+  LatLng(23.7505693, 90.3730078),
+  LatLng(24.3824967, 88.6037882),
+  LatLng(22.8170646, 89.556799),
+  LatLng(21.4509227, 91.9668569),
+  LatLng(23.7752681, 90.400771),
+  LatLng(24.5800093, 88.2640644), // nawabganj
+  LatLng(24.5879036, 88.275329), // nawabganj
+  LatLng(24.5836439, 88.2659779), // nawabganj
+  LatLng(23.7558982, 90.3629074),
+  LatLng(23.7505693, 90.3730078),
+  LatLng(24.3824967, 88.6037882),
+  LatLng(22.8170646, 89.556799),
+  LatLng(21.4509227, 91.9668569),
+  LatLng(23.7752681, 90.400771),
+  LatLng(24.5800093, 88.2640644), // nawabganj
+  LatLng(24.5879036, 88.275329), // nawabganj
+  LatLng(24.5836439, 88.2659779), // nawabganj
+  LatLng(23.7558982, 90.3629074),
+  LatLng(23.7505693, 90.3730078),
+  LatLng(24.3824967, 88.6037882),
+  LatLng(22.8170646, 89.556799),
+  LatLng(21.4509227, 91.9668569),
+  LatLng(23.7752681, 90.400771),
+  LatLng(24.5800093, 88.2640644), // nawabganj
+  LatLng(24.5879036, 88.275329), // nawabganj
+  LatLng(24.5836439, 88.2659779), // nawabganj
+  LatLng(23.7558982, 90.3629074),
+  LatLng(23.7505693, 90.3730078),
+  LatLng(24.3824967, 88.6037882),
+  LatLng(22.8170646, 89.556799),
+  LatLng(21.4509227, 91.9668569),
+  LatLng(23.7752681, 90.400771),
+  LatLng(24.5800093, 88.2640644), // nawabganj
+  LatLng(24.5879036, 88.275329), // nawabganj
+  LatLng(24.5836439, 88.2659779), // nawabganj
+  LatLng(23.7558982, 90.3629074),
+  LatLng(23.7505693, 90.3730078),
+  LatLng(24.3824967, 88.6037882),
+  LatLng(22.8170646, 89.556799),
+  LatLng(21.4509227, 91.9668569),
+  LatLng(23.7752681, 90.400771),
+  LatLng(24.5800093, 88.2640644), // nawabganj
+  LatLng(24.5879036, 88.275329), // nawabganj
+  LatLng(24.5836439, 88.2659779), // nawabganj
+  LatLng(23.7558982, 90.3629074),
+  LatLng(23.7505693, 90.3730078),
+  LatLng(24.3824967, 88.6037882),
+  LatLng(22.8170646, 89.556799),
+  LatLng(21.4509227, 91.9668569),
+  LatLng(23.7752681, 90.400771),
+  LatLng(24.5800093, 88.2640644), // nawabganj
+  LatLng(24.5879036, 88.275329), // nawabganj
+  LatLng(24.5836439, 88.2659779), // nawabganj
+  LatLng(23.7558982, 90.3629074),
+  LatLng(23.7505693, 90.3730078),
+  LatLng(24.3824967, 88.6037882),
+  LatLng(22.8170646, 89.556799),
+  LatLng(21.4509227, 91.9668569),
+  LatLng(23.7752681, 90.400771),
+  LatLng(24.5800093, 88.2640644), // nawabganj
+  LatLng(24.5879036, 88.275329), // nawabganj
+  LatLng(24.5836439, 88.2659779), // nawabganj
+  LatLng(23.7558982, 90.3629074),
+  LatLng(23.7505693, 90.3730078),
+  LatLng(24.3824967, 88.6037882),
+  LatLng(22.8170646, 89.556799),
+  LatLng(21.4509227, 91.9668569),
+  LatLng(23.7752681, 90.400771),
+  LatLng(24.5800093, 88.2640644), // nawabganj
+  LatLng(24.5879036, 88.275329), // nawabganj
+  LatLng(24.5836439, 88.2659779), // nawabganj
+  LatLng(23.7558982, 90.3629074),
+  LatLng(23.7505693, 90.3730078),
+  LatLng(24.3824967, 88.6037882),
+  LatLng(22.8170646, 89.556799),
+  LatLng(21.4509227, 91.9668569),
+  LatLng(23.7752681, 90.400771),
+  LatLng(24.5800093, 88.2640644), // nawabganj
+  LatLng(24.5879036, 88.275329), // nawabganj
+  LatLng(24.5836439, 88.2659779), // nawabganj
+  LatLng(23.7558982, 90.3629074),
+  LatLng(23.7505693, 90.3730078),
+  LatLng(24.3824967, 88.6037882),
+  LatLng(22.8170646, 89.556799),
+  LatLng(21.4509227, 91.9668569),
+  LatLng(23.7752681, 90.400771),
+  LatLng(24.5800093, 88.2640644), // nawabganj
+  LatLng(24.5879036, 88.275329), // nawabganj
+  LatLng(24.5836439, 88.2659779), // nawabganj
+  LatLng(23.7558982, 90.3629074),
+  LatLng(23.7505693, 90.3730078),
+  LatLng(24.3824967, 88.6037882),
+  LatLng(22.8170646, 89.556799),
+  LatLng(21.4509227, 91.9668569),
+  LatLng(23.7752681, 90.400771),
+  LatLng(24.5800093, 88.2640644), // nawabganj
+  LatLng(24.5879036, 88.275329), // nawabganj
+  LatLng(24.5836439, 88.2659779), // nawabganj
+  LatLng(23.7558982, 90.3629074),
+  LatLng(23.7505693, 90.3730078),
+  LatLng(24.3824967, 88.6037882),
+  LatLng(22.8170646, 89.556799),
+  LatLng(21.4509227, 91.9668569),
+  LatLng(23.7752681, 90.400771),
+  LatLng(24.5800093, 88.2640644), // nawabganj
+  LatLng(24.5879036, 88.275329), // nawabganj
+  LatLng(24.5836439, 88.2659779), // nawabganj
+  LatLng(23.7558982, 90.3629074),
+  LatLng(23.7505693, 90.3730078),
+  LatLng(24.3824967, 88.6037882),
+  LatLng(22.8170646, 89.556799),
+  LatLng(21.4509227, 91.9668569),
+  LatLng(23.7752681, 90.400771),
+  LatLng(24.5800093, 88.2640644), // nawabganj
+  LatLng(24.5879036, 88.275329), // nawabganj
+  LatLng(24.5836439, 88.2659779), // nawabganj
+  LatLng(23.7558982, 90.3629074),
+  LatLng(23.7505693, 90.3730078),
+  LatLng(24.3824967, 88.6037882),
+  LatLng(22.8170646, 89.556799),
+  LatLng(21.4509227, 91.9668569),
+  LatLng(23.7752681, 90.400771),
+  LatLng(24.5800093, 88.2640644), // nawabganj
+  LatLng(24.5879036, 88.275329), // nawabganj
+  LatLng(24.5836439, 88.2659779), // nawabganj
+  LatLng(23.7558982, 90.3629074),
+  LatLng(23.7505693, 90.3730078),
+  LatLng(24.3824967, 88.6037882),
+  LatLng(22.8170646, 89.556799),
+  LatLng(21.4509227, 91.9668569),
+  LatLng(23.7752681, 90.400771),
+  LatLng(24.5800093, 88.2640644), // nawabganj
+  LatLng(24.5879036, 88.275329), // nawabganj
+  LatLng(24.5836439, 88.2659779), // nawabganj
+  LatLng(23.7558982, 90.3629074),
+  LatLng(23.7505693, 90.3730078),
+  LatLng(24.3824967, 88.6037882),
+  LatLng(22.8170646, 89.556799),
+  LatLng(21.4509227, 91.9668569),
+  LatLng(23.7752681, 90.400771),
+  LatLng(24.5800093, 88.2640644), // nawabganj
+  LatLng(24.5879036, 88.275329), // nawabganj
+  LatLng(24.5836439, 88.2659779), // nawabganj
+  LatLng(23.7558982, 90.3629074),
+  LatLng(23.7505693, 90.3730078),
+  LatLng(24.3824967, 88.6037882),
+  LatLng(22.8170646, 89.556799),
+  LatLng(21.4509227, 91.9668569),
+  LatLng(23.7752681, 90.400771),
+  LatLng(24.5800093, 88.2640644), // nawabganj
+  LatLng(24.5879036, 88.275329), // nawabganj
+  LatLng(24.5836439, 88.2659779), // nawabganj
+  LatLng(23.7558982, 90.3629074),
+  LatLng(23.7505693, 90.3730078),
+  LatLng(24.3824967, 88.6037882),
+  LatLng(22.8170646, 89.556799),
+  LatLng(21.4509227, 91.9668569),
+  LatLng(23.7752681, 90.400771),
+  LatLng(24.5800093, 88.2640644), // nawabganj
+  LatLng(24.5879036, 88.275329), // nawabganj
+  LatLng(24.5836439, 88.2659779), // nawabganj
+  LatLng(23.7558982, 90.3629074),
+  LatLng(23.7505693, 90.3730078),
+  LatLng(24.3824967, 88.6037882),
+  LatLng(22.8170646, 89.556799),
+  LatLng(21.4509227, 91.9668569),
+  LatLng(23.7752681, 90.400771),
+  LatLng(24.5800093, 88.2640644), // nawabganj
+  LatLng(24.5879036, 88.275329), // nawabganj
+  LatLng(24.5836439, 88.2659779), // nawabganj
+  LatLng(23.7558982, 90.3629074),
+  LatLng(23.7505693, 90.3730078),
+  LatLng(24.3824967, 88.6037882),
+  LatLng(22.8170646, 89.556799),
+  LatLng(21.4509227, 91.9668569),
+  LatLng(23.7752681, 90.400771),
+  LatLng(24.5800093, 88.2640644), // nawabganj
+  LatLng(24.5879036, 88.275329), // nawabganj
+  LatLng(24.5836439, 88.2659779), // nawabganj
+  LatLng(23.7558982, 90.3629074),
+  LatLng(23.7505693, 90.3730078),
+  LatLng(24.3824967, 88.6037882),
+  LatLng(22.8170646, 89.556799),
+  LatLng(21.4509227, 91.9668569),
+  LatLng(23.7752681, 90.400771),
+  LatLng(24.5800093, 88.2640644), // nawabganj
+  LatLng(24.5879036, 88.275329), // nawabganj
+  LatLng(24.5836439, 88.2659779), // nawabganj
+  LatLng(23.7558982, 90.3629074),
+  LatLng(23.7505693, 90.3730078),
+  LatLng(24.3824967, 88.6037882),
+  LatLng(22.8170646, 89.556799),
+  LatLng(21.4509227, 91.9668569),
+  LatLng(23.7752681, 90.400771),
+  LatLng(24.5800093, 88.2640644), // nawabganj
+  LatLng(24.5879036, 88.275329), // nawabganj
+  LatLng(24.5836439, 88.2659779), // nawabganj
+  LatLng(23.7558982, 90.3629074),
+  LatLng(23.7505693, 90.3730078),
+  LatLng(24.3824967, 88.6037882),
+  LatLng(22.8170646, 89.556799),
+  LatLng(21.4509227, 91.9668569),
+  LatLng(23.7752681, 90.400771),
+  LatLng(24.5800093, 88.2640644), // nawabganj
+  LatLng(24.5879036, 88.275329), // nawabganj
+  LatLng(24.5836439, 88.2659779), // nawabganj
+  LatLng(23.7558982, 90.3629074),
+  LatLng(23.7505693, 90.3730078),
+  LatLng(24.3824967, 88.6037882),
+  LatLng(22.8170646, 89.556799),
+  LatLng(21.4509227, 91.9668569),
+  LatLng(23.7752681, 90.400771),
+  LatLng(24.5800093, 88.2640644), // nawabganj
+  LatLng(24.5879036, 88.275329), // nawabganj
+  LatLng(24.5836439, 88.2659779), // nawabganj
+  LatLng(23.7558982, 90.3629074),
+  LatLng(23.7505693, 90.3730078),
+  LatLng(24.3824967, 88.6037882),
+  LatLng(22.8170646, 89.556799),
+  LatLng(21.4509227, 91.9668569),
+  LatLng(23.7752681, 90.400771),
+  LatLng(24.5800093, 88.2640644), // nawabganj
+  LatLng(24.5879036, 88.275329), // nawabganj
+  LatLng(24.5836439, 88.2659779), // nawabganj
+  LatLng(23.7558982, 90.3629074),
+  LatLng(23.7505693, 90.3730078),
+  LatLng(24.3824967, 88.6037882),
+  LatLng(22.8170646, 89.556799),
+  LatLng(21.4509227, 91.9668569),
+  LatLng(23.7752681, 90.400771),
+  LatLng(24.5800093, 88.2640644), // nawabganj
+  LatLng(24.5879036, 88.275329), // nawabganj
+  LatLng(24.5836439, 88.2659779), // nawabganj
+  LatLng(23.7558982, 90.3629074),
+  LatLng(23.7505693, 90.3730078),
+  LatLng(24.3824967, 88.6037882),
+  LatLng(22.8170646, 89.556799),
+  LatLng(21.4509227, 91.9668569),
+
+  LatLng(24.5836439, 88.2659779), // nawabganj
+  LatLng(23.7558982, 90.3629074),
+  LatLng(23.7505693, 90.3730078),
+  LatLng(24.3824967, 88.6037882),
+  LatLng(22.8170646, 89.556799),
+  LatLng(21.4509227, 91.9668569),
+  LatLng(23.7752681, 90.400771),
+
+  LatLng(24.5879036, 88.275329), // nawabganj
+  LatLng(24.5836439, 88.2659779), // nawabganj
+  LatLng(23.7558982, 90.3629074),
+  LatLng(23.7505693, 90.3730078),
+  LatLng(24.3824967, 88.6037882),
+  LatLng(22.8170646, 89.556799),
+  LatLng(21.4509227, 91.9668569),
+  LatLng(23.7752681, 90.400771),
+  LatLng(24.5800093, 88.2640644), // nawabganj
+  LatLng(24.5879036, 88.275329), // nawabganj
+  LatLng(24.5836439, 88.2659779), // nawabganj
+  LatLng(23.7558982, 90.3629074),
+  LatLng(23.7505693, 90.3730078),
+  LatLng(24.3824967, 88.6037882),
+  LatLng(22.8170646, 89.556799),
+
+  LatLng(24.5800093, 88.2640644), // nawabganj
+  LatLng(24.5879036, 88.275329), // nawabganj
+  LatLng(24.5836439, 88.2659779), // nawabganj
+  LatLng(23.7558982, 90.3629074),
+  LatLng(23.7505693, 90.3730078),
+  LatLng(24.3824967, 88.6037882),
+  LatLng(22.8170646, 89.556799),
+  LatLng(21.4509227, 91.9668569),
+  LatLng(23.7752681, 90.400771),
+  LatLng(24.5800093, 88.2640644), // nawabganj
+  LatLng(24.5879036, 88.275329), // nawabganj
+  LatLng(24.5836439, 88.2659779), // nawabganj
+  LatLng(23.7558982, 90.3629074),
+  LatLng(23.7505693, 90.3730078),
+  LatLng(24.3824967, 88.6037882),
+  LatLng(22.8170646, 89.556799),
+  LatLng(21.4509227, 91.9668569),
+  LatLng(23.7752681, 90.400771),
+  LatLng(24.5800093, 88.2640644), // nawabganj
+  LatLng(24.5879036, 88.275329), // nawabganj
+  LatLng(24.5836439, 88.2659779), // nawabganj
+  LatLng(23.7558982, 90.3629074),
+  LatLng(23.7505693, 90.3730078),
+  LatLng(24.3824967, 88.6037882),
+  LatLng(22.8170646, 89.556799),
+  LatLng(21.4509227, 91.9668569),
+  LatLng(23.7752681, 90.400771),
+  LatLng(24.5800093, 88.2640644), // nawabganj
+  LatLng(24.5879036, 88.275329), // nawabganj
+  LatLng(24.5836439, 88.2659779), // nawabganj
+  LatLng(23.7558982, 90.3629074),
+  LatLng(23.7505693, 90.3730078),
+  LatLng(24.3824967, 88.6037882),
+  LatLng(22.8170646, 89.556799),
+  LatLng(21.4509227, 91.9668569),
+  LatLng(23.7752681, 90.400771),
+  LatLng(24.5800093, 88.2640644), // nawabganj
+  LatLng(24.5879036, 88.275329), // nawabganj
+  LatLng(24.5836439, 88.2659779), // nawabganj
+  LatLng(23.7558982, 90.3629074),
+  LatLng(24.5879036, 88.275329), // nawabganj
+  LatLng(24.5836439, 88.2659779), // nawabganj
+  LatLng(23.7558982, 90.3629074),
+  LatLng(23.7505693, 90.3730078),
+  LatLng(24.3824967, 88.6037882),
+  LatLng(22.8170646, 89.556799),
+  LatLng(21.4509227, 91.9668569),
+  LatLng(23.7752681, 90.400771),
+  LatLng(24.5800093, 88.2640644), // nawabganj
+  LatLng(24.5879036, 88.275329), // nawabganj
+  LatLng(24.5836439, 88.2659779), // nawabganj
+  LatLng(23.7558982, 90.3629074),
+  LatLng(23.7505693, 90.3730078),
+  LatLng(24.3824967, 88.6037882),
+  LatLng(22.8170646, 89.556799),
+  LatLng(21.4509227, 91.9668569),
+  LatLng(23.7752681, 90.400771),
+  LatLng(24.5800093, 88.2640644), // nawabganj
+  LatLng(24.5879036, 88.275329), // nawabganj
+  LatLng(24.5836439, 88.2659779), // nawabganj
+  LatLng(23.7558982, 90.3629074),
+  LatLng(23.7505693, 90.3730078),
+  LatLng(24.3824967, 88.6037882),
+  LatLng(22.8170646, 89.556799),
+  LatLng(21.4509227, 91.9668569),
+  LatLng(23.7752681, 90.400771),
+  LatLng(24.5800093, 88.2640644), // nawabganj
+  LatLng(24.5879036, 88.275329), // nawabganj
+  LatLng(24.5836439, 88.2659779), // nawabganj
+  LatLng(23.7558982, 90.3629074),
+  LatLng(24.5879036, 88.275329), // nawabganj
+  LatLng(24.5836439, 88.2659779), // nawabganj
+  LatLng(23.7558982, 90.3629074),
+  LatLng(23.7505693, 90.3730078),
+  LatLng(24.3824967, 88.6037882),
+  LatLng(22.8170646, 89.556799),
+  LatLng(21.4509227, 91.9668569),
+  LatLng(23.7752681, 90.400771),
+  LatLng(24.5800093, 88.2640644), // nawabganj
+  LatLng(24.5879036, 88.275329), // nawabganj
+  LatLng(24.5836439, 88.2659779), // nawabganj
+  LatLng(23.7558982, 90.3629074),
+  LatLng(23.7505693, 90.3730078),
+  LatLng(24.3824967, 88.6037882),
+  LatLng(22.8170646, 89.556799),
+  LatLng(21.4509227, 91.9668569),
+  LatLng(23.7752681, 90.400771),
+  LatLng(24.5800093, 88.2640644), // nawabganj
+  LatLng(24.5879036, 88.275329), // nawabganj
+  LatLng(24.5836439, 88.2659779), // nawabganj
+  LatLng(23.7558982, 90.3629074),
+  LatLng(23.7505693, 90.3730078),
+  LatLng(24.3824967, 88.6037882),
+  LatLng(22.8170646, 89.556799),
+  LatLng(21.4509227, 91.9668569),
+  LatLng(23.7752681, 90.400771),
+  LatLng(24.5800093, 88.2640644), // nawabganj
+  LatLng(24.5879036, 88.275329), // nawabganj
+  LatLng(24.5836439, 88.2659779), // nawabganj
+  LatLng(23.7558982, 90.3629074),
+  LatLng(24.5879036, 88.275329), // nawabganj
+  LatLng(24.5836439, 88.2659779), // nawabganj
+  LatLng(23.7558982, 90.3629074),
+  LatLng(23.7505693, 90.3730078),
+  LatLng(24.3824967, 88.6037882),
+  LatLng(22.8170646, 89.556799),
+  LatLng(21.4509227, 91.9668569),
+  LatLng(23.7752681, 90.400771),
+  LatLng(24.5800093, 88.2640644), // nawabganj
+  LatLng(24.5879036, 88.275329), // nawabganj
+  LatLng(24.5836439, 88.2659779), // nawabganj
+  LatLng(23.7558982, 90.3629074),
+  LatLng(23.7505693, 90.3730078),
+  LatLng(24.3824967, 88.6037882),
+  LatLng(22.8170646, 89.556799),
+  LatLng(21.4509227, 91.9668569),
+  LatLng(23.7752681, 90.400771),
+  LatLng(24.5800093, 88.2640644), // nawabganj
+  LatLng(24.5879036, 88.275329), // nawabganj
+  LatLng(24.5836439, 88.2659779), // nawabganj
+  LatLng(23.7558982, 90.3629074),
+  LatLng(23.7505693, 90.3730078),
+  LatLng(24.3824967, 88.6037882),
+  LatLng(22.8170646, 89.556799),
+  LatLng(21.4509227, 91.9668569),
+  LatLng(23.7752681, 90.400771),
+  LatLng(24.5800093, 88.2640644), // nawabganj
+  LatLng(24.5879036, 88.275329), // nawabganj
+  LatLng(24.5836439, 88.2659779), // nawabganj
+  LatLng(23.7558982, 90.3629074),
+  LatLng(24.5879036, 88.275329), // nawabganj
+  LatLng(24.5836439, 88.2659779), // nawabganj
+  LatLng(23.7558982, 90.3629074),
+  LatLng(23.7505693, 90.3730078),
+  LatLng(24.3824967, 88.6037882),
+  LatLng(22.8170646, 89.556799),
+  LatLng(21.4509227, 91.9668569),
+  LatLng(23.7752681, 90.400771),
+  LatLng(24.5800093, 88.2640644), // nawabganj
+  LatLng(24.5879036, 88.275329), // nawabganj
+  LatLng(24.5836439, 88.2659779), // nawabganj
+  LatLng(23.7558982, 90.3629074),
+  LatLng(23.7505693, 90.3730078),
+  LatLng(24.3824967, 88.6037882),
+  LatLng(22.8170646, 89.556799),
+  LatLng(21.4509227, 91.9668569),
+  LatLng(23.7752681, 90.400771),
+  LatLng(24.5800093, 88.2640644), // nawabganj
+  LatLng(24.5879036, 88.275329), // nawabganj
+  LatLng(24.5836439, 88.2659779), // nawabganj
+  LatLng(23.7558982, 90.3629074),
+  LatLng(23.7505693, 90.3730078),
+  LatLng(24.3824967, 88.6037882),
+  LatLng(22.8170646, 89.556799),
+  LatLng(21.4509227, 91.9668569),
+  LatLng(23.7752681, 90.400771),
+  LatLng(24.5800093, 88.2640644), // nawabganj
+  LatLng(24.5879036, 88.275329), // nawabganj
+  LatLng(24.5836439, 88.2659779), // nawabganj
+  LatLng(23.7558982, 90.3629074),
+  LatLng(24.5879036, 88.275329), // nawabganj
+  LatLng(24.5836439, 88.2659779), // nawabganj
+  LatLng(23.7558982, 90.3629074),
+  LatLng(23.7505693, 90.3730078),
+  LatLng(24.3824967, 88.6037882),
+  LatLng(22.8170646, 89.556799),
+  LatLng(21.4509227, 91.9668569),
+  LatLng(23.7752681, 90.400771),
+  LatLng(24.5800093, 88.2640644), // nawabganj
+  LatLng(24.5879036, 88.275329), // nawabganj
+  LatLng(24.5836439, 88.2659779), // nawabganj
+  LatLng(23.7558982, 90.3629074),
+  LatLng(23.7505693, 90.3730078),
+  LatLng(24.3824967, 88.6037882),
+  LatLng(22.8170646, 89.556799),
+  LatLng(21.4509227, 91.9668569),
+  LatLng(23.7752681, 90.400771),
+  LatLng(24.5800093, 88.2640644), // nawabganj
+  LatLng(24.5879036, 88.275329), // nawabganj
+  LatLng(24.5836439, 88.2659779), // nawabganj
+  LatLng(23.7558982, 90.3629074),
+  LatLng(23.7505693, 90.3730078),
+  LatLng(24.3824967, 88.6037882),
+  LatLng(22.8170646, 89.556799),
+  LatLng(21.4509227, 91.9668569),
+  LatLng(23.7752681, 90.400771),
+  LatLng(24.5800093, 88.2640644), // nawabganj
+  LatLng(24.5879036, 88.275329), // nawabganj
+  LatLng(24.5836439, 88.2659779), // nawabganj
+  LatLng(23.7558982, 90.3629074),
+  LatLng(24.5879036, 88.275329), // nawabganj
+  LatLng(24.5836439, 88.2659779), // nawabganj
+  LatLng(23.7558982, 90.3629074),
+  LatLng(23.7505693, 90.3730078),
+  LatLng(24.3824967, 88.6037882),
+  LatLng(22.8170646, 89.556799),
+  LatLng(21.4509227, 91.9668569),
+  LatLng(23.7752681, 90.400771),
+  LatLng(24.5800093, 88.2640644), // nawabganj
+  LatLng(24.5879036, 88.275329), // nawabganj
+  LatLng(24.5836439, 88.2659779), // nawabganj
+  LatLng(23.7558982, 90.3629074),
+  LatLng(23.7505693, 90.3730078),
+  LatLng(24.3824967, 88.6037882),
+  LatLng(22.8170646, 89.556799),
+  LatLng(21.4509227, 91.9668569),
+  LatLng(23.7752681, 90.400771),
+  LatLng(24.5800093, 88.2640644), // nawabganj
+  LatLng(24.5879036, 88.275329), // nawabganj
+  LatLng(24.5836439, 88.2659779), // nawabganj
+  LatLng(23.7558982, 90.3629074),
+  LatLng(23.7505693, 90.3730078),
+  LatLng(24.3824967, 88.6037882),
+  LatLng(22.8170646, 89.556799),
+  LatLng(21.4509227, 91.9668569),
+  LatLng(23.7752681, 90.400771),
+  LatLng(24.5800093, 88.2640644), // nawabganj
+  LatLng(24.5879036, 88.275329), // nawabganj
+  LatLng(24.5836439, 88.2659779), // nawabganj
+  LatLng(23.7558982, 90.3629074),
+  LatLng(24.5879036, 88.275329), // nawabganj
+  LatLng(24.5836439, 88.2659779), // nawabganj
+  LatLng(23.7558982, 90.3629074),
+  LatLng(23.7505693, 90.3730078),
+  LatLng(24.3824967, 88.6037882),
+  LatLng(22.8170646, 89.556799),
+  LatLng(21.4509227, 91.9668569),
+  LatLng(23.7752681, 90.400771),
+  LatLng(24.5800093, 88.2640644), // nawabganj
+  LatLng(24.5879036, 88.275329), // nawabganj
+  LatLng(24.5836439, 88.2659779), // nawabganj
+  LatLng(23.7558982, 90.3629074),
+  LatLng(23.7505693, 90.3730078),
+  LatLng(24.3824967, 88.6037882),
+  LatLng(22.8170646, 89.556799),
+  LatLng(21.4509227, 91.9668569),
+  LatLng(23.7752681, 90.400771),
+  LatLng(24.5800093, 88.2640644), // nawabganj
+  LatLng(24.5879036, 88.275329), // nawabganj
+  LatLng(24.5836439, 88.2659779), // nawabganj
+  LatLng(23.7558982, 90.3629074),
+  LatLng(23.7505693, 90.3730078),
+  LatLng(24.3824967, 88.6037882),
+  LatLng(22.8170646, 89.556799),
+  LatLng(21.4509227, 91.9668569),
+  LatLng(23.7752681, 90.400771),
+  LatLng(24.5800093, 88.2640644), // nawabganj
+  LatLng(24.5879036, 88.275329), // nawabganj
+  LatLng(24.5836439, 88.2659779), // nawabganj
+  LatLng(23.7558982, 90.3629074),
+  LatLng(24.5879036, 88.275329), // nawabganj
+  LatLng(24.5836439, 88.2659779), // nawabganj
+  LatLng(23.7558982, 90.3629074),
+  LatLng(23.7505693, 90.3730078),
+  LatLng(24.3824967, 88.6037882),
+  LatLng(22.8170646, 89.556799),
+  LatLng(21.4509227, 91.9668569),
+  LatLng(23.7752681, 90.400771),
+  LatLng(24.5800093, 88.2640644), // nawabganj
+  LatLng(24.5879036, 88.275329), // nawabganj
+  LatLng(24.5836439, 88.2659779), // nawabganj
+  LatLng(23.7558982, 90.3629074),
+  LatLng(23.7505693, 90.3730078),
+  LatLng(24.3824967, 88.6037882),
+  LatLng(22.8170646, 89.556799),
+  LatLng(21.4509227, 91.9668569),
+  LatLng(23.7752681, 90.400771),
+  LatLng(24.5800093, 88.2640644), // nawabganj
+  LatLng(24.5879036, 88.275329), // nawabganj
+  LatLng(24.5836439, 88.2659779), // nawabganj
+  LatLng(23.7558982, 90.3629074),
+  LatLng(23.7505693, 90.3730078),
+  LatLng(24.3824967, 88.6037882),
+  LatLng(22.8170646, 89.556799),
+  LatLng(21.4509227, 91.9668569),
+  LatLng(23.7752681, 90.400771),
+  LatLng(24.5800093, 88.2640644), // nawabganj
+  LatLng(24.5879036, 88.275329), // nawabganj
+  LatLng(24.5836439, 88.2659779), // nawabganj
+  LatLng(23.7558982, 90.3629074),
+  LatLng(24.5879036, 88.275329), // nawabganj
+  LatLng(24.5836439, 88.2659779), // nawabganj
+  LatLng(23.7558982, 90.3629074),
+  LatLng(23.7505693, 90.3730078),
+  LatLng(24.3824967, 88.6037882),
+  LatLng(22.8170646, 89.556799),
+  LatLng(21.4509227, 91.9668569),
+  LatLng(23.7752681, 90.400771),
+  LatLng(24.5800093, 88.2640644), // nawabganj
+  LatLng(24.5879036, 88.275329), // nawabganj
+  LatLng(24.5836439, 88.2659779), // nawabganj
+  LatLng(23.7558982, 90.3629074),
+  LatLng(23.7505693, 90.3730078),
+  LatLng(24.3824967, 88.6037882),
+  LatLng(22.8170646, 89.556799),
+  LatLng(21.4509227, 91.9668569),
+  LatLng(23.7752681, 90.400771),
+  LatLng(24.5800093, 88.2640644), // nawabganj
+  LatLng(24.5879036, 88.275329), // nawabganj
+  LatLng(24.5836439, 88.2659779), // nawabganj
+  LatLng(23.7558982, 90.3629074),
+  LatLng(23.7505693, 90.3730078),
+  LatLng(24.3824967, 88.6037882),
 ];

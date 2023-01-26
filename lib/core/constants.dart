@@ -11,7 +11,7 @@ class Constants {
   static const baseUrl = 'https://maps.googleapis.com/maps/api';
 
 
-  static const latLngBagladesh = LatLng(23.4956293,88.1004801);
+  static const latLngDhaka = LatLng(23.7807777,90.3492415);
 
   static const searchHint = 'Search Location';
 
