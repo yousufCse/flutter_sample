@@ -31,8 +31,8 @@ class PredictionItem extends StatelessWidget {
           ),
         ),
         Divider(
-          height: 2,
-          thickness: 2,
+          height: 1,
+          thickness: 1,
           color: Colors.grey[100],
         )
       ],

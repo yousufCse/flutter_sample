@@ -66,7 +66,16 @@ class _AgentPlaceScreenState extends State<AgentPlaceScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(title: const Text('Location App'), centerTitle: true),
+      backgroundColor: Colors.white,
+      appBar: AppBar(
+        elevation: 0,
+        title: const Text(
+          'Location App',
+          style: TextStyle(color: Colors.black),
+        ),
+        centerTitle: true,
+        backgroundColor: Colors.white,
+      ),
       body: MultiBlocListener(
         listeners: [
           BlocListener<PlaceDetailsApiCubit, PlaceDetailsApiState>(
@@ -102,12 +111,12 @@ class _AgentPlaceScreenState extends State<AgentPlaceScreen> {
     return Column(
       children: [
         Container(
-          height: 45,
+          // height: 45,
           margin:
-              const EdgeInsets.only(left: 10, right: 10, bottom: 10, top: 10),
+              const EdgeInsets.only(left: 15, right: 15, bottom: 5, top: 10),
           padding: const EdgeInsets.only(left: 10, right: 0),
           decoration: BoxDecoration(
-              color: Colors.grey[200], borderRadius: BorderRadius.circular(15)),
+              color: Colors.grey[100], borderRadius: BorderRadius.circular(25)),
           child: Row(
             children: [
               Expanded(
