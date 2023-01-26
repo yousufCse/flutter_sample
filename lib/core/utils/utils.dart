@@ -10,3 +10,8 @@ Future<Uint8List> getBytesFromAsset(String path, int width) async {
       .buffer
       .asUint8List();
 }
+
+// get JSON file form assets
+Future<String> getJsonFile(String path) async {
+  return await rootBundle.loadString(path);
+}

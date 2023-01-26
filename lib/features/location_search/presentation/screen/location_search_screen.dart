@@ -168,6 +168,14 @@ class _LocationSearchScreenState extends State<LocationSearchScreen> {
   void onMapCreated(controller) async {
     mapController = controller;
 
+    final mapStyle = await getJsonFile('assets/jsons/map_style.json');
+
+    mapController.setMapStyle(mapStyle);
+
+    loadAllMarker();
+  }
+
+  loadAllMarker() {
     for (int i = 0; i < listOfLatLng.length; i++) {
       addMarker('ID_${i + 1}', listOfLatLng[i]);
     }
