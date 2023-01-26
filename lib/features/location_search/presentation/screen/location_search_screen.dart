@@ -1,4 +1,5 @@
 import 'dart:async';
+import 'dart:math';
 
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
@@ -10,6 +11,7 @@ import 'package:flutter_sample/features/location_search/data/model/place/place_d
 import 'package:flutter_sample/features/location_search/data/model/prediction.dart';
 import 'package:flutter_sample/features/location_search/presentation/cubit/place_details_api_cubit.dart';
 import 'package:flutter_sample/features/location_search/presentation/cubit/prediction_api_cubit.dart';
+import 'package:flutter_sample/features/location_search/presentation/screen/agent_info.dart';
 import 'package:flutter_sample/features/location_search/presentation/widgets/prediction_item.dart';
 import 'package:geolocator/geolocator.dart';
 import 'package:google_maps_flutter/google_maps_flutter.dart';
@@ -176,10 +178,10 @@ class _LocationSearchScreenState extends State<LocationSearchScreen> {
   }
 
   loadAllMarker() {
-    for (int i = 0; i < listOfLatLng.length; i++) {
-      addMarker('ID_${i + 1}', listOfLatLng[i]);
+    for (int i = 0; i < generateAgentList().length; i++) {
+      final item = generateAgentList()[i];
+      addMarker(item);
     }
-    debugPrint('id: ${listOfLatLng.length}');
 
     setState(() {});
   }
@@ -238,22 +240,80 @@ class _LocationSearchScreenState extends State<LocationSearchScreen> {
 
   // BitmapDescriptor markerIcon = BitmapDescriptor.defaultMarker;
 
-  void addMarker(String markerIdString, LatLng position) async {
-    final markerId = MarkerId(markerIdString);
+  void onMarkerTap(AgentInfo data) {
+    debugPrint('marker on tap ress');
+
+    showModalBottomSheet(
+      context: context,
+      builder: (context) {
+        return Container(
+          height: 200,
+          color: Colors.amber,
+          child: Column(
+            children: [
+              Text(data.name),
+              Text(data.details),
+              Text(data.address),
+              Text(data.hyperlink),
+            ],
+          ),
+        );
+      },
+    );
+  }
+
+  void addMarker(AgentInfo data) async {
+    final markerId = MarkerId(data.id);
     final Uint8List markerIcon =
         await getBytesFromAsset('assets/images/location-pin.png', 100);
 
     final marker = Marker(
       markerId: markerId,
-      position: position,
-      infoWindow: const InfoWindow(title: 'Title', snippet: 'Address'),
+      position: LatLng(data.lat, data.lng),
+      onTap: () => onMarkerTap(data),
       icon: BitmapDescriptor.fromBytes(markerIcon),
     );
 
     markers.add(marker);
-    setState(() {});
+    // setState(() {});
+  }
+
+  List<AgentInfo> generateAgentList() {
+    List<AgentInfo> list = [];
+
+    for (int i = 0; i < 500; i++) {
+      final id = '${i + 1}';
+
+      var random = Random();
+
+      final mainLat = 23.7285045 + (random.nextInt(500) / 100);
+      final mainLng = 90.2963547 + (random.nextInt(500) / 100);
+
+      list.add(AgentInfo(
+          id: id,
+          name: 'Agent Name $id',
+          details: 'Agent Details $id',
+          address: '#$id No House, Road A, Location, Dhaka',
+          hyperlink: 'https://jsonplaceholder.typicode.com/todos/$id',
+          lat: mainLat,
+          lng: mainLng));
+    }
+
+    return list;
   }
 }
+
+const List<AgentInfo> agentList = [
+  AgentInfo(
+    id: '1',
+    name: 'Agroni Bank',
+    details: 'Agroni Bank Agent Details',
+    address: '5/5, Block F, Humayan Road, Mohammapdur, Dhaka-1207',
+    hyperlink: 'hyperlink',
+    lat: 23.7808727,
+    lng: 90.3542538,
+  ),
+];
 
 const List<LatLng> listOfLatLng = [
   LatLng(23.7558982, 90.3629074),
