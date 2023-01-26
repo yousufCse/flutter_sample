@@ -2,8 +2,8 @@ import 'dart:convert';
 
 import 'package:flutter/material.dart';
 import 'package:flutter_sample/core/constants.dart';
-import 'package:flutter_sample/features/agent_place/data/model/place/place_details.dart';
-import 'package:flutter_sample/features/agent_place/data/model/prediction.dart';
+import 'package:flutter_sample/features/location_search/data/model/place/place_details.dart';
+import 'package:flutter_sample/features/location_search/data/model/prediction.dart';
 import 'package:http/http.dart';
 
 abstract class LocationSearchRemote {

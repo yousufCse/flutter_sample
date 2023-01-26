@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:flutter_sample/features/agent_place/data/model/prediction.dart';
+import 'package:flutter_sample/features/location_search/data/model/prediction.dart';
 
 class PredictionItem extends StatelessWidget {
   final Prediction prediction;

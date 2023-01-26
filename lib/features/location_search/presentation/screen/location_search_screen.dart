@@ -4,11 +4,11 @@ import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_sample/core/constants.dart';
 import 'package:flutter_sample/core/debouncer.dart';
-import 'package:flutter_sample/features/agent_place/data/model/place/place_details.dart';
-import 'package:flutter_sample/features/agent_place/data/model/prediction.dart';
-import 'package:flutter_sample/features/agent_place/presentation/cubit/place_details_api_cubit.dart';
-import 'package:flutter_sample/features/agent_place/presentation/cubit/prediction_api_cubit.dart';
-import 'package:flutter_sample/features/search_location/presentation/widgets/prediction_item.dart';
+import 'package:flutter_sample/features/location_search/data/model/place/place_details.dart';
+import 'package:flutter_sample/features/location_search/data/model/prediction.dart';
+import 'package:flutter_sample/features/location_search/presentation/cubit/place_details_api_cubit.dart';
+import 'package:flutter_sample/features/location_search/presentation/cubit/prediction_api_cubit.dart';
+import 'package:flutter_sample/features/location_search/presentation/widgets/prediction_item.dart';
 import 'package:geolocator/geolocator.dart';
 import 'package:google_maps_flutter/google_maps_flutter.dart';
 

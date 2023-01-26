@@ -1,8 +1,8 @@
-import 'package:flutter_sample/features/agent_place/data/model/place/place_details.dart';
-import 'package:flutter_sample/features/agent_place/domain/repository/agent_place_repository.dart';
+import 'package:flutter_sample/features/location_search/data/model/place/place_details.dart';
+import 'package:flutter_sample/features/location_search/domain/repository/location_search_repository.dart';
 
 class GetPlaceDetailsUsecase {
-  final AgentPlaceRepository repository;
+  final LocationSearchRepository repository;
 
   const GetPlaceDetailsUsecase({required this.repository});
 

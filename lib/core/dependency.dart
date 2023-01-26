@@ -1,10 +1,11 @@
-import 'package:flutter_sample/features/agent_place/data/datasource/agent_place_remote.dart';
-import 'package:flutter_sample/features/agent_place/data/repository/agent_place_repository_impl.dart';
-import 'package:flutter_sample/features/agent_place/domain/repository/agent_place_repository.dart';
-import 'package:flutter_sample/features/agent_place/domain/usecase/get_place_details_usecase.dart';
-import 'package:flutter_sample/features/agent_place/domain/usecase/get_prediction_list_usecase.dart';
-import 'package:flutter_sample/features/agent_place/presentation/cubit/place_details_api_cubit.dart';
-import 'package:flutter_sample/features/agent_place/presentation/cubit/prediction_api_cubit.dart';
+
+import 'package:flutter_sample/features/location_search/data/datasource/location_search_remote.dart';
+import 'package:flutter_sample/features/location_search/data/repository/location_search_repository_impl.dart';
+import 'package:flutter_sample/features/location_search/domain/repository/location_search_repository.dart';
+import 'package:flutter_sample/features/location_search/domain/usecase/get_place_details_usecase.dart';
+import 'package:flutter_sample/features/location_search/domain/usecase/get_prediction_list_usecase.dart';
+import 'package:flutter_sample/features/location_search/presentation/cubit/place_details_api_cubit.dart';
+import 'package:flutter_sample/features/location_search/presentation/cubit/prediction_api_cubit.dart';
 import 'package:get_it/get_it.dart';
 import 'package:http/http.dart';
 
@@ -19,11 +20,11 @@ setup() {
   sl.registerLazySingleton(() => GetPredictionListUsecase(repository: sl()));
   sl.registerLazySingleton(() => GetPlaceDetailsUsecase(repository: sl()));
 
-  sl.registerLazySingleton<AgentPlaceRepository>(
-      () => AgentPlaceRepositoryImpl(remote: sl()));
+  sl.registerLazySingleton<LocationSearchRepository>(
+      () => LocationSearchRepositoryImpl(remote: sl()));
 
-  sl.registerLazySingleton<AgentPlaceRemote>(
-      () => AgentPlaceRemoteImpl(client: sl()));
+  sl.registerLazySingleton<LocationSearchRemote>(
+      () => LocationSearchRemoteImpl(client: sl()));
 
   sl.registerLazySingleton(() => Client());
 }

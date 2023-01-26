@@ -1,6 +1,6 @@
 import 'package:flutter_bloc/flutter_bloc.dart';
-import 'package:flutter_sample/features/agent_place/data/model/place/place_details.dart';
-import 'package:flutter_sample/features/agent_place/domain/usecase/get_place_details_usecase.dart';
+import 'package:flutter_sample/features/location_search/data/model/place/place_details.dart';
+import 'package:flutter_sample/features/location_search/domain/usecase/get_place_details_usecase.dart';
 
 part 'place_details_api_state.dart';
 

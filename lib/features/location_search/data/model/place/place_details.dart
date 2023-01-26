@@ -1,4 +1,4 @@
-import 'package:flutter_sample/features/agent_place/data/model/place/geometry.dart';
+import 'package:flutter_sample/features/location_search/data/model/place/geometry.dart';
 
 class PlaceDetails {
   final Geometry geometry;

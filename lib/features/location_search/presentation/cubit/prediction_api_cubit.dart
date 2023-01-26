@@ -1,6 +1,6 @@
 import 'package:flutter_bloc/flutter_bloc.dart';
-import 'package:flutter_sample/features/agent_place/data/model/prediction.dart';
-import 'package:flutter_sample/features/agent_place/domain/usecase/get_prediction_list_usecase.dart';
+import 'package:flutter_sample/features/location_search/data/model/prediction.dart';
+import 'package:flutter_sample/features/location_search/domain/usecase/get_prediction_list_usecase.dart';
 
 part 'prediction_api_state.dart';
 
