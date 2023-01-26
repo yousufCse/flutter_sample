@@ -9,6 +9,7 @@ import 'package:flutter_sample/features/agent_place/data/model/place/place_detai
 import 'package:flutter_sample/features/agent_place/data/model/prediction.dart';
 import 'package:flutter_sample/features/agent_place/presentation/cubit/place_details_api_cubit.dart';
 import 'package:flutter_sample/features/agent_place/presentation/cubit/prediction_api_cubit.dart';
+import 'package:flutter_sample/features/agent_place/presentation/widgets/prediction_item.dart';
 import 'package:geolocator/geolocator.dart';
 import 'package:google_maps_flutter/google_maps_flutter.dart';
 
@@ -61,7 +62,7 @@ class _AgentPlaceScreenState extends State<AgentPlaceScreen> {
     });
   }
 
-  onItemTap(Prediction item) {
+  void onItemTap(Prediction item) {
     FocusManager.instance.primaryFocus?.unfocus();
     placeDetailsApiCubit.getPlaceDetails(item.placeId);
     searchFieldController.text = item.description;
@@ -143,18 +144,8 @@ class _AgentPlaceScreenState extends State<AgentPlaceScreen> {
                     itemCount: predictionList.length,
                     itemBuilder: (context, index) {
                       final item = predictionList[index];
-                      return InkWell(
-                        onTap: () => onItemTap(item),
-                        child: Container(
-                            color: Colors.grey[300],
-                            margin: const EdgeInsets.only(bottom: 10),
-                            padding: const EdgeInsets.only(
-                                left: 12, right: 12, top: 5, bottom: 5),
-                            child: Text(
-                              item.description,
-                              style: const TextStyle(fontSize: 18),
-                            )),
-                      );
+                      return PredictionItem(
+                          prediction: item, onItemTap: () => onItemTap(item));
                     }),
             ],
           ),
