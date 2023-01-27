@@ -34,7 +34,9 @@ class _LocationSearchScreenState extends State<LocationSearchScreen> {
   late PlaceDetailsApiCubit placeDetailsApiCubit;
   late PredictionApiCubit predictionApiCubit;
 
-  Debouncer debouncer = Debouncer(milliseconds: 500);
+  Debouncer debouncer = Debouncer(milliseconds: 1000);
+
+  List<AgentInfo> agentInfoList = [];
 
   @override
   void initState() {
@@ -42,6 +44,8 @@ class _LocationSearchScreenState extends State<LocationSearchScreen> {
     predictionApiCubit = BlocProvider.of<PredictionApiCubit>(context);
 
     getCurrentLocation();
+
+    agentInfoList = generateAgentList();
 
     super.initState();
   }
@@ -146,16 +150,14 @@ class _LocationSearchScreenState extends State<LocationSearchScreen> {
                 const CircularProgressIndicator(),
               if (userCurrentLocation != null)
                 GoogleMap(
-                    initialCameraPosition:
-                        CameraPosition(zoom: 14, target: userCurrentLocation!),
-                    markers: markers,
-                    myLocationEnabled: true,
-                    onMapCreated: onMapCreated,
-                    onCameraMove: (position) {
-                      debugPrint('onCameraMove: ${position.zoom}');
-                      debugPrint(
-                          'LatLng: (${position.target.latitude}, ${position.target.longitude})');
-                    }),
+                  initialCameraPosition:
+                      CameraPosition(zoom: 14, target: userCurrentLocation!),
+                  markers: markers,
+                  myLocationEnabled: true,
+                  onMapCreated: _onMapCreated,
+                  onCameraMove: _onCameraMove,
+                  tiltGesturesEnabled: true,
+                ),
               if (predictionList.isNotEmpty)
                 ListView.builder(
                     itemCount: predictionList.length,
@@ -171,17 +173,69 @@ class _LocationSearchScreenState extends State<LocationSearchScreen> {
     );
   }
 
-  void onMapCreated(controller) async {
+  void _onCameraMove(CameraPosition position) {
+    debouncer.run(() {
+      final currentLatLng =
+          LatLng(position.target.latitude, position.target.longitude);
+
+      var count = 0;
+      for (int i = 0; i < agentInfoList.length; i++) {
+        final item = agentInfoList[i];
+        final latLng = LatLng(item.lat, item.lng);
+
+        final distance = _calculateDistance(currentLatLng, latLng);
+       
+        // distance in meters
+        if (distance < 2000) {
+          addMarker(item);
+          count++;
+          debugPrint('distance of #${item.id}: $distance');
+        } else {
+          setState(() {
+            markers.removeWhere((marker) => marker.markerId.value == item.id);
+          });
+        }
+      }
+      debugPrint('_onCameraMove count => $count');
+    });
+  }
+
+  void _onMapCreated(controller) async {
     mapController = controller;
 
     final mapStyle = await getJsonFile('assets/jsons/map_style.json');
 
     mapController.setMapStyle(mapStyle);
 
-    loadAllMarker();
+    // _loadNearbyMarker(userCurrentLocation!);
   }
 
-  loadAllMarker() {
+  _loadNearbyMarker(LatLng latLng) {
+    markers.clear();
+    var count = 0;
+    for (int i = 0; i < generateAgentList().length; i++) {
+      final item = generateAgentList()[i];
+      final itemLatLng = LatLng(item.lat, item.lng);
+      final distance = _calculateDistance(latLng, itemLatLng);
+
+      if (distance < 1000) {
+        addMarker(item);
+        count++;
+      }
+    }
+
+    debugPrint('NearByMarkerCount: $count');
+  }
+
+  double _calculateDistance(LatLng first, LatLng second) =>
+      Geolocator.distanceBetween(
+        first.latitude,
+        first.longitude,
+        second.latitude,
+        second.longitude,
+      );
+
+  void _loadAllMarker() {
     for (int i = 0; i < generateAgentList().length; i++) {
       final item = generateAgentList()[i];
       addMarker(item);
@@ -213,6 +267,11 @@ class _LocationSearchScreenState extends State<LocationSearchScreen> {
   }
 
   Future<void> gotoPlace(PlaceDetails place) async {
+    final selectedLatLng =
+        LatLng(place.geometry.location.lat, place.geometry.location.lng);
+
+    // _loadNearbyMarker(selectedLatLng);
+
     mapController.animateCamera(
       CameraUpdate.newCameraPosition(
         CameraPosition(
@@ -285,13 +344,13 @@ class _LocationSearchScreenState extends State<LocationSearchScreen> {
   List<AgentInfo> generateAgentList() {
     List<AgentInfo> list = [];
 
-    for (int i = 0; i < 100; i++) {
+    for (int i = 0; i < 5000; i++) {
       final id = '${i + 1}';
 
       var random = Random();
 
-      final mainLat = 23.7275664 + (random.nextInt(100) / 1000);
-      final mainLng = 90.2990201 + (random.nextInt(100) / 1000);
+      final mainLat = 23.7275664 + (random.nextInt(1000) / 1000);
+      final mainLng = 90.2990201 + (random.nextInt(1000) / 1000);
 
       list.add(AgentInfo(
           id: id,
