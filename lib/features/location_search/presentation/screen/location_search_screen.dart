@@ -146,12 +146,16 @@ class _LocationSearchScreenState extends State<LocationSearchScreen> {
                 const CircularProgressIndicator(),
               if (userCurrentLocation != null)
                 GoogleMap(
-                  initialCameraPosition:
-                      CameraPosition(zoom: 14, target: userCurrentLocation!),
-                  markers: markers,
-                  myLocationEnabled: true,
-                  onMapCreated: onMapCreated,
-                ),
+                    initialCameraPosition:
+                        CameraPosition(zoom: 14, target: userCurrentLocation!),
+                    markers: markers,
+                    myLocationEnabled: true,
+                    onMapCreated: onMapCreated,
+                    onCameraMove: (position) {
+                      debugPrint('onCameraMove: ${position.zoom}');
+                      debugPrint(
+                          'LatLng: (${position.target.latitude}, ${position.target.longitude})');
+                    }),
               if (predictionList.isNotEmpty)
                 ListView.builder(
                     itemCount: predictionList.length,
@@ -275,25 +279,25 @@ class _LocationSearchScreenState extends State<LocationSearchScreen> {
     );
 
     markers.add(marker);
-    // setState(() {});
+    setState(() {});
   }
 
   List<AgentInfo> generateAgentList() {
     List<AgentInfo> list = [];
 
-    for (int i = 0; i < 500; i++) {
+    for (int i = 0; i < 100; i++) {
       final id = '${i + 1}';
 
       var random = Random();
 
-      final mainLat = 23.7285045 + (random.nextInt(500) / 100);
-      final mainLng = 90.2963547 + (random.nextInt(500) / 100);
+      final mainLat = 23.7275664 + (random.nextInt(100) / 1000);
+      final mainLng = 90.2990201 + (random.nextInt(100) / 1000);
 
       list.add(AgentInfo(
           id: id,
           name: 'Agent Name $id',
           details: 'Agent Details $id',
-          address: '#$id No House, Road A, Location, Dhaka',
+          address: '#$id House, Road A, Location, Dhaka',
           hyperlink: 'https://jsonplaceholder.typicode.com/todos/$id',
           lat: mainLat,
           lng: mainLng));
