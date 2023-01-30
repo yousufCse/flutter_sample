@@ -85,6 +85,7 @@ class _LocationSearchScreenState extends State<LocationSearchScreen> {
     FocusManager.instance.primaryFocus?.unfocus();
     placeDetailsApiCubit.getPlaceDetails(item.placeId);
     searchFieldController.text = item.description;
+    markers.clear();
   }
 
   @override
