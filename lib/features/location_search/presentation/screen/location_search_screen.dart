@@ -28,11 +28,11 @@ class _LocationSearchScreenState extends State<LocationSearchScreen> {
   final TextEditingController searchFieldController = TextEditingController();
 
   late GoogleMapController mapController;
-  final double defaultZoom = 14;
+  final double defaultZoom = 13.0;
   double currentZoom = 0;
   LatLng? userCurrentLocation;
 
-  final markers = <Marker>{};
+  final Set<Marker> markers = <Marker>{};
 
   late PlaceDetailsApiCubit placeDetailsApiCubit;
   late PredictionApiCubit predictionApiCubit;
@@ -124,7 +124,7 @@ class _LocationSearchScreenState extends State<LocationSearchScreen> {
   }
 
   Widget _body() {
-    debugPrint('build body...');
+    debugPrint('build body === markers: ${markers.length}');
     List<Prediction> predictionList = [];
 
     final predictionState = context.watch<PredictionApiCubit>().state;
@@ -222,7 +222,7 @@ class _LocationSearchScreenState extends State<LocationSearchScreen> {
         count++;
       } else {
         if (currentZoom <= defaultZoom) {
-          markers.removeWhere((marker) => marker.markerId.value == item.id);
+          removeMarker(item.id);
         }
       }
     }
@@ -261,7 +261,17 @@ class _LocationSearchScreenState extends State<LocationSearchScreen> {
     );
   }
 
+  void removeMarker(String id) {
+    markers.removeWhere((marker) => marker.markerId.value == id);
+  }
+
   void addMarker(AgentInfo data) async {
+    if (markers
+        .where((element) => element.markerId.value == data.id)
+        .isNotEmpty) {
+      return;
+    }
+
     final markerId = MarkerId(data.id);
 
     final marker = Marker(
