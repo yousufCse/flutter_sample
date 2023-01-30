@@ -12,6 +12,7 @@ import 'package:flutter_sample/features/location_search/data/model/prediction.da
 import 'package:flutter_sample/features/location_search/presentation/cubit/place_details_api_cubit.dart';
 import 'package:flutter_sample/features/location_search/presentation/cubit/prediction_api_cubit.dart';
 import 'package:flutter_sample/features/location_search/presentation/screen/agent_info.dart';
+import 'package:flutter_sample/features/location_search/presentation/widgets/agent_info_bottom_sheet.dart';
 import 'package:flutter_sample/features/location_search/presentation/widgets/prediction_item.dart';
 import 'package:geolocator/geolocator.dart';
 import 'package:google_maps_flutter/google_maps_flutter.dart';
@@ -46,10 +47,9 @@ class _LocationSearchScreenState extends State<LocationSearchScreen> {
   void initState() {
     placeDetailsApiCubit = BlocProvider.of<PlaceDetailsApiCubit>(context);
     predictionApiCubit = BlocProvider.of<PredictionApiCubit>(context);
-
-    getCurrentLocation();
-
     agentInfoList = generateAgentList();
+
+    _getCurrentLocation();
 
     setMarkerIcon();
 
@@ -58,6 +58,11 @@ class _LocationSearchScreenState extends State<LocationSearchScreen> {
 
   void setMarkerIcon() async {
     markerIcon = await getBytesFromAsset('assets/images/location-pin.png', 120);
+  }
+
+  _getCurrentLocation() async {
+    userCurrentLocation = await getCurrentLocation();
+    setState(() {});
   }
 
   void onPressClearBtn() {
@@ -119,10 +124,11 @@ class _LocationSearchScreenState extends State<LocationSearchScreen> {
   }
 
   Widget _body() {
-    debugPrint('build body');
+    debugPrint('build body...');
     List<Prediction> predictionList = [];
 
     final predictionState = context.watch<PredictionApiCubit>().state;
+
     if (predictionState is PredictionApiSuccess) {
       predictionList = predictionState.list;
     }
@@ -130,7 +136,6 @@ class _LocationSearchScreenState extends State<LocationSearchScreen> {
     return Column(
       children: [
         Container(
-          // height: 45,
           margin:
               const EdgeInsets.only(left: 15, right: 15, bottom: 5, top: 10),
           padding: const EdgeInsets.only(left: 10, right: 0),
@@ -166,7 +171,6 @@ class _LocationSearchScreenState extends State<LocationSearchScreen> {
                   myLocationEnabled: true,
                   onMapCreated: _onMapCreated,
                   onCameraMove: _onCameraMove,
-                  tiltGesturesEnabled: true,
                 ),
               if (predictionList.isNotEmpty)
                 ListView.builder(
@@ -186,6 +190,7 @@ class _LocationSearchScreenState extends State<LocationSearchScreen> {
   void _onCameraMove(CameraPosition position) {
     currentZoom = position.zoom;
     debugPrint('current zoom lavel: $currentZoom');
+
     debouncer.run(() {
       final currentLatLng =
           LatLng(position.target.latitude, position.target.longitude);
@@ -200,8 +205,6 @@ class _LocationSearchScreenState extends State<LocationSearchScreen> {
     final mapStyle = await getJsonFile('assets/jsons/map_style.json');
 
     mapController.setMapStyle(mapStyle);
-
-    // _loadNearbyMarker(userCurrentLocation!);
   }
 
   _loadNearbyMarker(LatLng latLng) {
@@ -210,61 +213,25 @@ class _LocationSearchScreenState extends State<LocationSearchScreen> {
     for (int i = 0; i < agentInfoList.length; i++) {
       final item = agentInfoList[i];
       final itemLatLng = LatLng(item.lat, item.lng);
-      final distance = _calculateDistance(latLng, itemLatLng);
+
+      final distance = calculateDistanceBetweenTwoPosition(latLng, itemLatLng);
 
       if (distance < 1000 && currentZoom >= defaultZoom) {
-        setState(() {
-          addMarker(item);
-        });
+        addMarker(item);
+
         count++;
       } else {
         if (currentZoom <= defaultZoom) {
-          setState(() {
-            markers.removeWhere((marker) => marker.markerId.value == item.id);
-          });
+          markers.removeWhere((marker) => marker.markerId.value == item.id);
         }
       }
     }
+    setState(() {});
 
     debugPrint('NearByMarkerCount: $count');
   }
 
-  double _calculateDistance(LatLng first, LatLng second) =>
-      Geolocator.distanceBetween(
-        first.latitude,
-        first.longitude,
-        second.latitude,
-        second.longitude,
-      );
-
-  getCurrentLocation() async {
-    LocationPermission permission;
-    permission = await Geolocator.requestPermission();
-
-    debugPrint('Permisson: ${permission.name}');
-
-    if (permission == LocationPermission.always ||
-        permission == LocationPermission.whileInUse) {
-      Position position = await Geolocator.getCurrentPosition(
-          desiredAccuracy: LocationAccuracy.high);
-
-      double lat = position.latitude;
-      double lng = position.longitude;
-
-      userCurrentLocation = LatLng(lat, lng);
-      setState(() {});
-    } else {
-      userCurrentLocation = Constants.latLngDhaka;
-      setState(() {});
-    }
-  }
-
   Future<void> gotoPlace(PlaceDetails place) async {
-    final selectedLatLng =
-        LatLng(place.geometry.location.lat, place.geometry.location.lng);
-
-    // _loadNearbyMarker(selectedLatLng);
-
     mapController.animateCamera(
       CameraUpdate.newCameraPosition(
         CameraPosition(
@@ -278,12 +245,6 @@ class _LocationSearchScreenState extends State<LocationSearchScreen> {
     );
   }
 
-  void moveCameraPosition(LatLng latLng) {
-    mapController.animateCamera(
-      CameraUpdate.newCameraPosition(CameraPosition(target: latLng, zoom: 12)),
-    );
-  }
-
   void onMarkerTap(AgentInfo data) async {
     debugPrint('marker on tap ress');
 
@@ -293,33 +254,8 @@ class _LocationSearchScreenState extends State<LocationSearchScreen> {
           borderRadius: BorderRadius.only(
               topLeft: Radius.circular(20), topRight: Radius.circular(20))),
       builder: (context) {
-        return Container(
-          margin: const EdgeInsets.only(left: 15, right: 10),
-          height: 200,
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              Row(mainAxisAlignment: MainAxisAlignment.spaceBetween, children: [
-                Text(
-                  data.name,
-                  style: const TextStyle(
-                      fontSize: 18, fontWeight: FontWeight.w500),
-                ),
-                IconButton(
-                    onPressed: () {
-                      Navigator.pop(context);
-                    },
-                    icon: const Icon(Icons.close))
-              ]),
-              Text(data.details),
-              const SizedBox(height: 10),
-              Text(data.address),
-              const SizedBox(height: 10),
-              Text(data.hyperlink,
-                  style: const TextStyle(
-                      color: Colors.blue, fontStyle: FontStyle.italic)),
-            ],
-          ),
+        return AgentInfoBottomSheet(
+          data: data,
         );
       },
     );
@@ -362,15 +298,3 @@ class _LocationSearchScreenState extends State<LocationSearchScreen> {
     return list;
   }
 }
-
-const List<LatLng> listOfLatLng = [
-  LatLng(23.7558982, 90.3629074),
-  LatLng(23.7505693, 90.3730078),
-  LatLng(24.3824967, 88.6037882),
-  LatLng(22.8170646, 89.556799),
-  LatLng(21.4509227, 91.9668569),
-  LatLng(23.7752681, 90.400771),
-  LatLng(24.5800093, 88.2640644), // nawabganj
-  LatLng(24.5879036, 88.275329), // nawabganj
-  LatLng(24.5836439, 88.2659779), // nawabganj
-];
