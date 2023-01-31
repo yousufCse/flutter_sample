@@ -1,10 +1,8 @@
 import 'dart:async';
-import 'dart:math';
 
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
-import 'package:flutter_sample/core/constants.dart';
 import 'package:flutter_sample/core/debouncer.dart';
 import 'package:flutter_sample/core/utils/utils.dart';
 import 'package:flutter_sample/features/location_search/data/model/place/place_details.dart';
@@ -15,7 +13,6 @@ import 'package:flutter_sample/features/location_search/presentation/cubit/predi
 import 'package:flutter_sample/features/location_search/presentation/screen/agent_info.dart';
 import 'package:flutter_sample/features/location_search/presentation/widgets/agent_info_bottom_sheet.dart';
 import 'package:flutter_sample/features/location_search/presentation/widgets/location_search_field.dart';
-import 'package:flutter_sample/features/location_search/presentation/widgets/prediction_item.dart';
 import 'package:flutter_sample/features/location_search/presentation/widgets/prediction_list.dart';
 import 'package:google_maps_flutter/google_maps_flutter.dart';
 
@@ -55,12 +52,12 @@ class _LocationSearchScreenState extends State<LocationSearchScreen> {
 
     _getCurrentLocation();
 
-    setMarkerIcon();
+    _setMarkerIcon();
 
     super.initState();
   }
 
-  void setMarkerIcon() async {
+  void _setMarkerIcon() async {
     markerIcon = await getBytesFromAsset('assets/images/location-pin.png', 120);
   }
 
@@ -76,12 +73,8 @@ class _LocationSearchScreenState extends State<LocationSearchScreen> {
   }
 
   void onChangeSearchField(String value) {
-    debugPrint('onChange called: $value');
-
     debouncer.run(() {
       predictionApiCubit.getPredictinList(value.trim());
-
-      debugPrint('Debouncer run called.');
     });
   }
 
@@ -205,6 +198,7 @@ class _LocationSearchScreenState extends State<LocationSearchScreen> {
 
       final distance = calculateDistanceBetweenTwoPosition(latLng, itemLatLng);
 
+      // around 1000 meters
       if (distance < 1000) {
         addMarker(item);
 
