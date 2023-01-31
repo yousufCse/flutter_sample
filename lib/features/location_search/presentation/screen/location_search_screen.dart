@@ -13,8 +13,8 @@ import 'package:flutter_sample/features/location_search/presentation/cubit/place
 import 'package:flutter_sample/features/location_search/presentation/cubit/prediction_api_cubit.dart';
 import 'package:flutter_sample/features/location_search/presentation/screen/agent_info.dart';
 import 'package:flutter_sample/features/location_search/presentation/widgets/agent_info_bottom_sheet.dart';
+import 'package:flutter_sample/features/location_search/presentation/widgets/location_search_field.dart';
 import 'package:flutter_sample/features/location_search/presentation/widgets/prediction_item.dart';
-import 'package:geolocator/geolocator.dart';
 import 'package:google_maps_flutter/google_maps_flutter.dart';
 
 class LocationSearchScreen extends StatefulWidget {
@@ -136,28 +136,10 @@ class _LocationSearchScreenState extends State<LocationSearchScreen> {
 
     return Column(
       children: [
-        Container(
-          margin:
-              const EdgeInsets.only(left: 15, right: 15, bottom: 5, top: 10),
-          padding: const EdgeInsets.only(left: 10, right: 0),
-          decoration: BoxDecoration(
-              color: Colors.grey[100], borderRadius: BorderRadius.circular(25)),
-          child: Row(
-            children: [
-              Expanded(
-                child: TextField(
-                  controller: searchFieldController,
-                  onChanged: onChangeSearchField,
-                  decoration: const InputDecoration(
-                      hintText: Constants.searchHint, border: InputBorder.none),
-                ),
-              ),
-              searchFieldController.text.trim().isEmpty
-                  ? const IconButton(onPressed: null, icon: Icon(Icons.search))
-                  : IconButton(
-                      onPressed: onPressClearBtn, icon: const Icon(Icons.clear))
-            ],
-          ),
+        LocationSearchField(
+          controller: searchFieldController,
+          onChanged: onChangeSearchField,
+          onTapClear: onPressClearBtn,
         ),
         Expanded(
           child: Stack(
@@ -190,9 +172,9 @@ class _LocationSearchScreenState extends State<LocationSearchScreen> {
 
   void _onCameraMove(CameraPosition position) {
     currentZoom = position.zoom;
-    debugPrint('current zoom lavel: $currentZoom');
 
     debouncer.run(() {
+      debugPrint('current zoom lavel: $currentZoom');
       final currentLatLng =
           LatLng(position.target.latitude, position.target.longitude);
 
@@ -212,6 +194,7 @@ class _LocationSearchScreenState extends State<LocationSearchScreen> {
     if (currentZoom < defaultZoom) {
       debugPrint('clear markers');
       markers.clear();
+      setState(() {});
       return;
     }
 
