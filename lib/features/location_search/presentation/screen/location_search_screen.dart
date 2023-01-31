@@ -209,7 +209,12 @@ class _LocationSearchScreenState extends State<LocationSearchScreen> {
   }
 
   _loadNearbyMarker(LatLng latLng) {
-    // markers.clear();
+    if (currentZoom < defaultZoom) {
+      debugPrint('clear markers');
+      markers.clear();
+      return;
+    }
+
     var count = 0;
     for (int i = 0; i < agentInfoList.length; i++) {
       final item = agentInfoList[i];
@@ -217,12 +222,12 @@ class _LocationSearchScreenState extends State<LocationSearchScreen> {
 
       final distance = calculateDistanceBetweenTwoPosition(latLng, itemLatLng);
 
-      if (distance < 1000 && currentZoom >= defaultZoom) {
+      if (distance < 1000) {
         addMarker(item);
 
         count++;
       } else {
-        if (currentZoom <= defaultZoom) {
+        if (markers.length > 30 && distance > 3000) {
           removeMarker(item.id);
         }
       }
