@@ -9,12 +9,14 @@ import 'package:flutter_sample/core/debouncer.dart';
 import 'package:flutter_sample/core/utils/utils.dart';
 import 'package:flutter_sample/features/location_search/data/model/place/place_details.dart';
 import 'package:flutter_sample/features/location_search/data/model/prediction.dart';
+import 'package:flutter_sample/features/location_search/presentation/cubit/agent_info_api_cubit.dart';
 import 'package:flutter_sample/features/location_search/presentation/cubit/place_details_api_cubit.dart';
 import 'package:flutter_sample/features/location_search/presentation/cubit/prediction_api_cubit.dart';
 import 'package:flutter_sample/features/location_search/presentation/screen/agent_info.dart';
 import 'package:flutter_sample/features/location_search/presentation/widgets/agent_info_bottom_sheet.dart';
 import 'package:flutter_sample/features/location_search/presentation/widgets/location_search_field.dart';
 import 'package:flutter_sample/features/location_search/presentation/widgets/prediction_item.dart';
+import 'package:flutter_sample/features/location_search/presentation/widgets/prediction_list.dart';
 import 'package:google_maps_flutter/google_maps_flutter.dart';
 
 class LocationSearchScreen extends StatefulWidget {
@@ -36,6 +38,7 @@ class _LocationSearchScreenState extends State<LocationSearchScreen> {
 
   late PlaceDetailsApiCubit placeDetailsApiCubit;
   late PredictionApiCubit predictionApiCubit;
+  late AgentInfoApiCubit agenInfoApiCubit;
 
   Debouncer debouncer = Debouncer(milliseconds: 500);
 
@@ -47,7 +50,8 @@ class _LocationSearchScreenState extends State<LocationSearchScreen> {
   void initState() {
     placeDetailsApiCubit = BlocProvider.of<PlaceDetailsApiCubit>(context);
     predictionApiCubit = BlocProvider.of<PredictionApiCubit>(context);
-    agentInfoList = generateAgentList();
+    agenInfoApiCubit = BlocProvider.of<AgentInfoApiCubit>(context)
+      ..getAgentInfos();
 
     _getCurrentLocation();
 
@@ -81,7 +85,7 @@ class _LocationSearchScreenState extends State<LocationSearchScreen> {
     });
   }
 
-  void onItemTap(Prediction item) {
+  void onListItemTap(Prediction item) {
     FocusManager.instance.primaryFocus?.unfocus();
     placeDetailsApiCubit.getPlaceDetails(item.placeId);
     searchFieldController.text = item.description;
@@ -109,10 +113,20 @@ class _LocationSearchScreenState extends State<LocationSearchScreen> {
           BlocListener<PredictionApiCubit, PredictionApiState>(
             listener: _listenToPredictionApi,
           ),
+          BlocListener<AgentInfoApiCubit, AgentInfoApiState>(
+            listener: _listenToAgentInfoApi,
+          ),
         ],
         child: _body(),
       ),
     );
+  }
+
+  void _listenToAgentInfoApi(context, state) {
+    if (state is AgentInfoApiSuccess) {
+      agentInfoList = state.src;
+      setState(() {});
+    }
   }
 
   void _listenToPredictionApi(context, state) {}
@@ -126,13 +140,6 @@ class _LocationSearchScreenState extends State<LocationSearchScreen> {
 
   Widget _body() {
     debugPrint('build body === markers: ${markers.length}');
-    List<Prediction> predictionList = [];
-
-    final predictionState = context.watch<PredictionApiCubit>().state;
-
-    if (predictionState is PredictionApiSuccess) {
-      predictionList = predictionState.list;
-    }
 
     return Column(
       children: [
@@ -155,14 +162,7 @@ class _LocationSearchScreenState extends State<LocationSearchScreen> {
                   onMapCreated: _onMapCreated,
                   onCameraMove: _onCameraMove,
                 ),
-              if (predictionList.isNotEmpty)
-                ListView.builder(
-                    itemCount: predictionList.length,
-                    itemBuilder: (context, index) {
-                      final item = predictionList[index];
-                      return PredictionItem(
-                          prediction: item, onItemTap: () => onItemTap(item));
-                    }),
+              PredictionList(onListItemTap: onListItemTap)
             ],
           ),
         ),
@@ -228,7 +228,7 @@ class _LocationSearchScreenState extends State<LocationSearchScreen> {
             place.geometry.location.lat,
             place.geometry.location.lng,
           ),
-          zoom: currentZoom,
+          zoom: defaultZoom,
         ),
       ),
     );
@@ -271,29 +271,5 @@ class _LocationSearchScreenState extends State<LocationSearchScreen> {
     );
 
     markers.add(marker);
-  }
-
-  List<AgentInfo> generateAgentList() {
-    List<AgentInfo> list = [];
-
-    for (int i = 0; i < 2000; i++) {
-      final id = '${i + 1}';
-
-      var random = Random();
-
-      final mainLat = 23.7275664 + (random.nextInt(2000) / 10000);
-      final mainLng = 90.2990201 + (random.nextInt(2000) / 10000);
-
-      list.add(AgentInfo(
-          id: id,
-          name: 'Agent Name $id',
-          details: 'Agent Details $id',
-          address: '#$id House, Road A, Location, Dhaka',
-          hyperlink: 'https://jsonplaceholder.typicode.com/todos/$id',
-          lat: mainLat,
-          lng: mainLng));
-    }
-
-    return list;
   }
 }
