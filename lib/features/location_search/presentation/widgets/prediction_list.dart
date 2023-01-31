@@ -13,7 +13,7 @@ class PredictionList extends StatelessWidget {
   Widget build(BuildContext context) {
     return BlocBuilder<PredictionApiCubit, PredictionApiState>(
       builder: (context, state) {
-        if (state is PredictionApiSuccess) {
+        if (state is PredictionApiSuccess && state.list.isNotEmpty) {
           return ListView.builder(
               itemCount: state.list.length,
               itemBuilder: (context, index) {
