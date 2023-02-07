@@ -4,6 +4,7 @@ import 'package:flutter_sample/core/dependency.dart';
 import 'package:flutter_sample/features/agent_location/presentation/cubit/agent_location_cubit.dart';
 import 'package:flutter_sample/features/agent_location/presentation/cubit/api/agent_location_api_cubit.dart';
 import 'package:flutter_sample/features/agent_location/presentation/cubit/location_search_cubit.dart';
+import 'package:flutter_sample/features/agent_location/presentation/cubit/marker_item/marker_item_tap_cubit.dart';
 import 'package:flutter_sample/features/agent_location/presentation/screen/agent_location_screen.dart';
 
 class App extends StatelessWidget {
@@ -23,6 +24,9 @@ class App extends StatelessWidget {
           ),
           BlocProvider(
             create: (context) => sl<AgentLocationCubit>(),
+          ),
+          BlocProvider(
+            create: (context) => sl<MarkerItemTapCubit>(),
           ),
         ],
         child: const AgentLocationScreen(),

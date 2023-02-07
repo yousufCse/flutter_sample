@@ -9,6 +9,7 @@ import 'package:flutter_sample/features/agent_location/domain/entity/agent_info_
 import 'package:flutter_sample/features/agent_location/presentation/cubit/agent_location_cubit.dart';
 import 'package:flutter_sample/features/agent_location/presentation/cubit/api/agent_location_api_cubit.dart';
 import 'package:flutter_sample/features/agent_location/presentation/cubit/location_search_cubit.dart';
+import 'package:flutter_sample/features/agent_location/presentation/cubit/marker_item/marker_item_tap_cubit.dart';
 import 'package:flutter_sample/features/agent_location/presentation/widgets/agent_info_bottom_sheet.dart';
 import 'package:flutter_sample/features/agent_location/presentation/widgets/location_search_list.dart';
 import 'package:flutter_sample/features/agent_location/presentation/widgets/location_search_textfield.dart';
@@ -42,13 +43,7 @@ class _AgentLocationScreenState extends State<AgentLocationScreen> {
     agentLocationCubit = BlocProvider.of<AgentLocationCubit>(context)
       ..getCurrentUserLocation();
 
-    _setMarkerIcon();
-
     super.initState();
-  }
-
-  void _setMarkerIcon() async {
-    markerIcon = await getBytesFromAsset('assets/images/location-pin.png', 120);
   }
 
   @override
@@ -60,6 +55,16 @@ class _AgentLocationScreenState extends State<AgentLocationScreen> {
           listeners: [
             BlocListener<AgentLocationApiCubit, AgentLocationApiState>(
               listener: _listenToAgentInfoApi,
+            ),
+            BlocListener<MarkerItemTapCubit, MarkerItemTapState>(
+              listener: (context, state) {
+                debugPrint('onMarkerItem Listen: ${state.props}');
+
+                if (state is MarkerItemTapFired) {
+                  onMarkerTap(state.entity);
+                }
+              },
+              child: Container(),
             )
           ],
           child: _body(),
@@ -113,9 +118,7 @@ class _AgentLocationScreenState extends State<AgentLocationScreen> {
 
   void _onMapCreated(controller) async {
     mapController = controller;
-
     final mapStyle = await getJsonFile('assets/jsons/map_style.json');
-
     mapController.setMapStyle(mapStyle);
   }
 
@@ -123,8 +126,10 @@ class _AgentLocationScreenState extends State<AgentLocationScreen> {
     currentZoom = position.zoom;
 
     debouncer.run(() {
-      _loadNearbyMarker(
-          LatLng(position.target.latitude, position.target.longitude));
+      agentLocationCubit.displayNearByMarkers(
+          LatLng(position.target.latitude, position.target.longitude),
+          defaultZoom,
+          currentZoom);
     });
   }
 
@@ -150,35 +155,6 @@ class _AgentLocationScreenState extends State<AgentLocationScreen> {
     await gotoPlace(LatLng(item.lat, item.lng));
   }
 
-  _loadNearbyMarker(LatLng latLng) {
-    // if (currentZoom < defaultZoom) {
-    //   debugPrint('clear markers');
-    //   agentLocationCubit.clearMarkers();
-    //   return;
-    // }
-
-    var count = 0;
-    for (int i = 0; i < agentLocationCubit.agentList.length; i++) {
-      final item = agentLocationCubit.agentList[i];
-      final itemLatLng = LatLng(item.lat, item.lng);
-
-      final distance = calculateDistanceBetweenTwoPosition(latLng, itemLatLng);
-
-      // around 1000 meters
-      if (distance < 50000) {
-        _addMarker(item);
-
-        count++;
-      } else {
-        if (agentLocationCubit.state.markers.length > 30 && distance > 100000) {
-          agentLocationCubit.removeMarker(item.id);
-        }
-      }
-    }
-
-    debugPrint('NearByMarkerCount: $count');
-  }
-
   Future<void> gotoPlace(LatLng location) async {
     mapController.animateCamera(
       CameraUpdate.newCameraPosition(
@@ -200,18 +176,5 @@ class _AgentLocationScreenState extends State<AgentLocationScreen> {
         return AgentInfoBottomSheet(data: data);
       },
     );
-  }
-
-  void _addMarker(AgentInfoEntity data) async {
-    final markerId = MarkerId(data.id);
-
-    final marker = Marker(
-      markerId: markerId,
-      position: LatLng(data.lat, data.lng),
-      onTap: () => onMarkerTap(data),
-      icon: BitmapDescriptor.fromBytes(markerIcon),
-    );
-
-    agentLocationCubit.addMarker(marker);
   }
 }
