@@ -7,9 +7,8 @@ import 'package:flutter_sample/core/debouncer.dart';
 import 'package:flutter_sample/core/utils/map_util.dart';
 import 'package:flutter_sample/features/agent_location/domain/entity/agent_info_entity.dart';
 import 'package:flutter_sample/features/agent_location/presentation/cubit/agent_location_cubit.dart';
-import 'package:flutter_sample/features/agent_location/presentation/cubit/api/agent_location_api_cubit.dart';
-import 'package:flutter_sample/features/agent_location/presentation/cubit/location_search_cubit.dart';
 import 'package:flutter_sample/features/agent_location/presentation/cubit/marker_item/marker_item_tap_cubit.dart';
+import 'package:flutter_sample/features/agent_location/presentation/cubit/search/location_search_cubit.dart';
 import 'package:flutter_sample/features/agent_location/presentation/widgets/agent_info_bottom_sheet.dart';
 import 'package:flutter_sample/features/agent_location/presentation/widgets/location_search_list.dart';
 import 'package:flutter_sample/features/agent_location/presentation/widgets/location_search_textfield.dart';
@@ -23,7 +22,6 @@ class AgentLocationScreen extends StatefulWidget {
 }
 
 class _AgentLocationScreenState extends State<AgentLocationScreen> {
-  late AgentLocationApiCubit agenInfoApiCubit;
   late LocationSearchCubit locationSearchCubit;
   late AgentLocationCubit agentLocationCubit;
 
@@ -36,12 +34,10 @@ class _AgentLocationScreenState extends State<AgentLocationScreen> {
 
   @override
   void initState() {
-    agenInfoApiCubit = BlocProvider.of<AgentLocationApiCubit>(context)
-      ..getAgentList();
-
     locationSearchCubit = BlocProvider.of<LocationSearchCubit>(context);
     agentLocationCubit = BlocProvider.of<AgentLocationCubit>(context)
-      ..getCurrentUserLocation();
+      ..getCurrentUserLocation()
+      ..getAgentList();
 
     super.initState();
   }
@@ -53,9 +49,6 @@ class _AgentLocationScreenState extends State<AgentLocationScreen> {
         appBar: _appbar(),
         body: MultiBlocListener(
           listeners: [
-            BlocListener<AgentLocationApiCubit, AgentLocationApiState>(
-              listener: _listenToAgentInfoApi,
-            ),
             BlocListener<MarkerItemTapCubit, MarkerItemTapState>(
               listener: (context, state) {
                 debugPrint('onMarkerItem Listen: ${state.props}');
@@ -110,12 +103,6 @@ class _AgentLocationScreenState extends State<AgentLocationScreen> {
     );
   }
 
-  void _listenToAgentInfoApi(context, state) {
-    if (state is AgentLocationApiSuccess) {
-      agentLocationCubit.addAgentList(state.src);
-    }
-  }
-
   void _onMapCreated(controller) async {
     mapController = controller;
     final mapStyle = await getJsonFile('assets/json/map_style.json');
@@ -134,22 +121,21 @@ class _AgentLocationScreenState extends State<AgentLocationScreen> {
   }
 
   _onChangeSearchValue(value) {
-    agentLocationCubit.onChangedSearchValue(value);
-    debouncer.run(() {
-      locationSearchCubit.searchLocation(value, agentLocationCubit.agentList);
-    });
+    locationSearchCubit.onSearchValueChanged(
+      value,
+      agentLocationCubit.agentList,
+    );
   }
 
   void _onPressClearBtn() {
-    FocusManager.instance.primaryFocus?.unfocus();
-    agentLocationCubit.onChangedSearchValue('');
-    locationSearchCubit.setToInitialState();
+    _hideKeyboard();
+    locationSearchCubit.setToInitialStateWithSearchValue('');
   }
 
   void _onListItemTap(AgentInfoEntity item) async {
-    FocusManager.instance.primaryFocus?.unfocus();
-    agentLocationCubit.onChangedSearchValue(item.address);
-    locationSearchCubit.setToInitialState();
+    _hideKeyboard();
+
+    locationSearchCubit.setToInitialStateWithSearchValue(item.address);
     agentLocationCubit.clearMarkers();
 
     await gotoPlace(LatLng(item.lat, item.lng));
@@ -176,5 +162,9 @@ class _AgentLocationScreenState extends State<AgentLocationScreen> {
         return AgentInfoBottomSheet(data: data);
       },
     );
+  }
+
+  void _hideKeyboard() {
+    FocusManager.instance.primaryFocus?.unfocus();
   }
 }

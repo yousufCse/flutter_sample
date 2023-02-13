@@ -4,14 +4,17 @@ import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_sample/core/constants.dart';
 import 'package:flutter_sample/core/location_service/location_service.dart';
+import 'package:flutter_sample/core/usecase/usecase.dart';
 import 'package:flutter_sample/core/utils/map_util.dart';
 import 'package:flutter_sample/features/agent_location/domain/entity/agent_info_entity.dart';
+import 'package:flutter_sample/features/agent_location/domain/usecase/get_agent_list_usecase.dart';
 import 'package:flutter_sample/features/agent_location/presentation/cubit/marker_item/marker_item_tap_cubit.dart';
 import 'package:google_maps_flutter/google_maps_flutter.dart';
 
 part 'agent_location_state.dart';
 
 class AgentLocationCubit extends Cubit<AgentLocationState> {
+  final GetAgentListUsecase getAgentListUsecase;
   final LocationService locationService;
 
   final MarkerItemTapCubit markerItemTapCubit;
@@ -19,8 +22,9 @@ class AgentLocationCubit extends Cubit<AgentLocationState> {
   late Uint8List markerIcon;
 
   AgentLocationCubit({
-    required this.locationService,
     required this.markerItemTapCubit,
+    required this.locationService,
+    required this.getAgentListUsecase,
   }) : super(const AgentLocationState()) {
     _setMarkerIcon();
   }
@@ -29,8 +33,16 @@ class AgentLocationCubit extends Cubit<AgentLocationState> {
     markerIcon = await getBytesFromAsset('assets/images/location-pin.png', 120);
   }
 
-  void onChangedSearchValue(String value) {
-    emit(state.copyWith(searchValue: value));
+  List<AgentInfoEntity> get agentList => state.agentList;
+  
+  void getAgentList() async {
+    try {
+      final list = await getAgentListUsecase.call(NoParams());
+
+      emit(state.copyWith(agentList: list));
+    } catch (e) {
+      emit(state.copyWith(agentList: []));
+    }
   }
 
   void getCurrentUserLocation() async {
@@ -41,12 +53,6 @@ class AgentLocationCubit extends Cubit<AgentLocationState> {
       emit(state.copyWith(userCurrentLocation: Constants.latLngDhaka));
     }
   }
-
-  void addAgentList(List<AgentInfoEntity> agentList) {
-    emit(state.copyWith(agentList: agentList));
-  }
-
-  List<AgentInfoEntity> get agentList => state.agentList;
 
   void removeMarker(String id) {
     final markerList = state.markers;

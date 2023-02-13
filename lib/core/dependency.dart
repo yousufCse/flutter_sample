@@ -4,9 +4,8 @@ import 'package:flutter_sample/features/agent_location/data/repository/agent_loc
 import 'package:flutter_sample/features/agent_location/domain/repository/agent_location_repository.dart';
 import 'package:flutter_sample/features/agent_location/domain/usecase/get_agent_list_usecase.dart';
 import 'package:flutter_sample/features/agent_location/presentation/cubit/agent_location_cubit.dart';
-import 'package:flutter_sample/features/agent_location/presentation/cubit/api/agent_location_api_cubit.dart';
-import 'package:flutter_sample/features/agent_location/presentation/cubit/location_search_cubit.dart';
 import 'package:flutter_sample/features/agent_location/presentation/cubit/marker_item/marker_item_tap_cubit.dart';
+import 'package:flutter_sample/features/agent_location/presentation/cubit/search/location_search_cubit.dart';
 import 'package:get_it/get_it.dart';
 import 'package:http/http.dart';
 
@@ -14,11 +13,12 @@ final sl = GetIt.instance;
 
 setup() {
   // Cubit
-  sl.registerLazySingleton(
-      () => AgentLocationApiCubit(getAgentListUsecase: sl()));
+
   sl.registerLazySingleton(() => LocationSearchCubit());
-  sl.registerLazySingleton(() =>
-      AgentLocationCubit(locationService: sl(), markerItemTapCubit: sl()));
+  sl.registerLazySingleton(() => AgentLocationCubit(
+      locationService: sl(),
+      markerItemTapCubit: sl(),
+      getAgentListUsecase: sl()));
   sl.registerLazySingleton(() => MarkerItemTapCubit());
 
   // Usecase

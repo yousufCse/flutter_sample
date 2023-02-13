@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_sample/core/constants.dart';
-import 'package:flutter_sample/features/agent_location/presentation/cubit/agent_location_cubit.dart';
+import 'package:flutter_sample/features/agent_location/presentation/cubit/search/location_search_cubit.dart';
 
 class LocationSearchTextField extends StatelessWidget {
   final Function(String value) onChanged;
@@ -17,12 +17,12 @@ class LocationSearchTextField extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return BlocBuilder<AgentLocationCubit, AgentLocationState>(
+    return BlocBuilder<LocationSearchCubit, LocationSearchState>(
       buildWhen: (previous, current) {
-        return previous.searchInput != current.searchInput;
+        return previous.searchValue != current.searchValue;
       },
       builder: (context, state) {
-        controller.text = state.searchInput;
+        controller.text = state.searchValue;
         controller.selection =
             TextSelection.collapsed(offset: controller.text.length);
 
@@ -44,7 +44,7 @@ class LocationSearchTextField extends StatelessWidget {
                   ),
                 ),
               ),
-              state.searchInput.isEmpty
+              state.searchValue.isEmpty
                   ? const IconButton(onPressed: null, icon: Icon(Icons.search))
                   : IconButton(
                       onPressed: onTapClear, icon: const Icon(Icons.clear))
