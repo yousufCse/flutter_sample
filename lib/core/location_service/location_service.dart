@@ -3,6 +3,7 @@ import 'package:google_maps_flutter/google_maps_flutter.dart';
 
 abstract class LocationService {
   Future<LatLng> getCurrentLocation();
+  double getDistanceBetweenTwoPosition(LatLng fromPositon, LatLng toPostion);
 }
 
 class LocationServiceImpl implements LocationService {
@@ -24,5 +25,15 @@ class LocationServiceImpl implements LocationService {
 
     return permission == LocationPermission.always ||
         permission == LocationPermission.whileInUse;
+  }
+
+  @override
+  double getDistanceBetweenTwoPosition(LatLng fromPositon, LatLng toPostion) {
+    return Geolocator.distanceBetween(
+      fromPositon.latitude,
+      fromPositon.longitude,
+      toPostion.latitude,
+      toPostion.longitude,
+    );
   }
 }

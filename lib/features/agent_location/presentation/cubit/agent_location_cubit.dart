@@ -1,11 +1,10 @@
 import 'dart:typed_data';
-
 import 'package:equatable/equatable.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_sample/core/constants.dart';
 import 'package:flutter_sample/core/location_service/location_service.dart';
-import 'package:flutter_sample/core/utils/utils.dart';
+import 'package:flutter_sample/core/utils/map_util.dart';
 import 'package:flutter_sample/features/agent_location/domain/entity/agent_info_entity.dart';
 import 'package:flutter_sample/features/agent_location/presentation/cubit/marker_item/marker_item_tap_cubit.dart';
 import 'package:google_maps_flutter/google_maps_flutter.dart';
@@ -30,7 +29,7 @@ class AgentLocationCubit extends Cubit<AgentLocationState> {
     markerIcon = await getBytesFromAsset('assets/images/location-pin.png', 120);
   }
 
-  void changeText(String value) {
+  void onChangedSearchValue(String value) {
     emit(state.copyWith(searchValue: value));
   }
 
@@ -88,7 +87,8 @@ class AgentLocationCubit extends Cubit<AgentLocationState> {
       final item = agentList[i];
       final itemLatLng = LatLng(item.lat, item.lng);
 
-      final distance = calculateDistanceBetweenTwoPosition(latLng, itemLatLng);
+      final distance =
+          locationService.getDistanceBetweenTwoPosition(latLng, itemLatLng);
 
       // around 1000 meters
       if (distance < 50000) {

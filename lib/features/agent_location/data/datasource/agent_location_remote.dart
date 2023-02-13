@@ -1,6 +1,5 @@
 import 'dart:convert';
 
-import 'package:flutter/material.dart';
 import 'package:flutter_sample/features/agent_location/data/model/agent_list_response_model.dart';
 import 'package:http/http.dart';
 
@@ -20,7 +19,6 @@ class AgentLocationRemoteImpl implements AgentLocationRemote {
 
     final response =
         await client.get(url, headers: {'Content-Type': 'application/json'});
-    // debugPrint('response: ${response.body}');
 
     if (response.statusCode == 200) {
       final responseModel =

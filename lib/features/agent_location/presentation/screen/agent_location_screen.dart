@@ -4,7 +4,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_sample/core/debouncer.dart';
-import 'package:flutter_sample/core/utils/utils.dart';
+import 'package:flutter_sample/core/utils/map_util.dart';
 import 'package:flutter_sample/features/agent_location/domain/entity/agent_info_entity.dart';
 import 'package:flutter_sample/features/agent_location/presentation/cubit/agent_location_cubit.dart';
 import 'package:flutter_sample/features/agent_location/presentation/cubit/api/agent_location_api_cubit.dart';
@@ -37,7 +37,7 @@ class _AgentLocationScreenState extends State<AgentLocationScreen> {
   @override
   void initState() {
     agenInfoApiCubit = BlocProvider.of<AgentLocationApiCubit>(context)
-      ..getAgentInfos();
+      ..getAgentList();
 
     locationSearchCubit = BlocProvider.of<LocationSearchCubit>(context);
     agentLocationCubit = BlocProvider.of<AgentLocationCubit>(context)
@@ -61,7 +61,7 @@ class _AgentLocationScreenState extends State<AgentLocationScreen> {
                 debugPrint('onMarkerItem Listen: ${state.props}');
 
                 if (state is MarkerItemTapFired) {
-                  onMarkerTap(state.entity);
+                  showBottomSheet(state.entity);
                 }
               },
               child: Container(),
@@ -118,7 +118,7 @@ class _AgentLocationScreenState extends State<AgentLocationScreen> {
 
   void _onMapCreated(controller) async {
     mapController = controller;
-    final mapStyle = await getJsonFile('assets/jsons/map_style.json');
+    final mapStyle = await getJsonFile('assets/json/map_style.json');
     mapController.setMapStyle(mapStyle);
   }
 
@@ -134,7 +134,7 @@ class _AgentLocationScreenState extends State<AgentLocationScreen> {
   }
 
   _onChangeSearchValue(value) {
-    agentLocationCubit.changeText(value);
+    agentLocationCubit.onChangedSearchValue(value);
     debouncer.run(() {
       locationSearchCubit.searchLocation(value, agentLocationCubit.agentList);
     });
@@ -142,13 +142,13 @@ class _AgentLocationScreenState extends State<AgentLocationScreen> {
 
   void _onPressClearBtn() {
     FocusManager.instance.primaryFocus?.unfocus();
-    agentLocationCubit.changeText('');
+    agentLocationCubit.onChangedSearchValue('');
     locationSearchCubit.setToInitialState();
   }
 
   void _onListItemTap(AgentInfoEntity item) async {
     FocusManager.instance.primaryFocus?.unfocus();
-    agentLocationCubit.changeText(item.address);
+    agentLocationCubit.onChangedSearchValue(item.address);
     locationSearchCubit.setToInitialState();
     agentLocationCubit.clearMarkers();
 
@@ -166,7 +166,7 @@ class _AgentLocationScreenState extends State<AgentLocationScreen> {
     );
   }
 
-  void onMarkerTap(AgentInfoEntity data) async {
+  void showBottomSheet(AgentInfoEntity data) async {
     await showModalBottomSheet(
       context: context,
       shape: const RoundedRectangleBorder(
